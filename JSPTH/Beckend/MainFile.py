@@ -10,4 +10,9 @@ def render_about():
 
 @abstractmethod
 def render_contact():
-    pass
+    return render_template('contact.html')
+
+
+@abstractmethod
+def render_support():
+    return render_template('support_me.html')
