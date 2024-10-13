@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
-import os
-import sys
+
 
 
 class Math(ABC):
     def square_number(num: int) -> int:
         print(num**2)
+
+    def root(root_num: int, num: int) -> int:
+        pass
 
     def subtract_numbers(num1: int, num2: int) -> int:
         print(num1 - num2)
