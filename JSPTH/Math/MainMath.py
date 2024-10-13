@@ -10,7 +10,7 @@ class Math(ABC):
     def subtract_numbers(num1: int, num2: int) -> int:
         print(num1 - num2)
 
-    def add(num_one, num_two):
+    def add(num_one, num_two) -> int:
         num_three = num_one + num_two
         return num_three
 
