@@ -7,10 +7,7 @@ class Console(ABC):
     def log(arguments):
         print(arguments)
 
-    def __init__(self) -> None:
-        super().__init__()
-
-    def Wrtite(arguments):
+    def Write(arguments):
         Console.log(arguments)
 
     def WrtiteLine(arguments):
@@ -18,11 +15,16 @@ class Console(ABC):
 
 
     def get(text):
-        input(text)
+        text_input = input(text)
+        return text_input
+
 
     def IntGet(text):
-        int(input(text))
+        text_input = int(input(text))
+        return text_input
+    
+
 
     def FloatInt(text):
-        float(input(text))
-    
+        text_input = float(input(text))
+        return text_input

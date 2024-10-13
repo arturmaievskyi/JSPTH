@@ -10,9 +10,9 @@ class Math(ABC):
     def subtract_numbers(num1: int, num2: int) -> int:
         print(num1 - num2)
 
-    def add(num_one, num_two) -> int:
-        num_three = num_one + num_two
-        return num_three
+    def add(num_one: int, num_two: int) -> int:
+        num = int(num_one + num_two)
+        print(num)
 
 
     def divide_numbers(num1: int, num2: int) -> int:
