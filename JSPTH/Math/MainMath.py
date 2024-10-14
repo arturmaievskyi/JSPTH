@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
-import Math
+import cmath
+
 
 
 class MyMath(ABC):
     def square_number(num: int) -> int:
         print(num**2)
 
-    def root(num: int) -> int:
-        pass
+    def root(num: float) -> complex:
+        print(cmath.sqrt(num))
 
     def subtract_numbers(num1: int, num2: int) -> int:
         print(num1 - num2)
