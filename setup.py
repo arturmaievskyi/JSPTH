@@ -9,7 +9,7 @@ from setuptools import setup
 :copyright: (c) 2021 Peopl3s
 """
 
-version = '1.0.2'
+version = '0.1.0'
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
@@ -22,7 +22,7 @@ setup(
     author_email='artr.mayevski@gmail.com',
 
     description=(
-        u'Python module, importing JS functions and math code '
+        u'Python module, importing some JS functions and math code '
     ),
     long_description=long_description,
     long_description_content_type='text/markdown',
