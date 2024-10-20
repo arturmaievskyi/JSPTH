@@ -5,13 +5,15 @@ import cmath
 
 class MyMath(ABC):
     def square_number(num: int) -> int:
-        return(num**2)
+        squard_num = num**2
+        return(squard_num)
 
     def root(num: float) -> complex:
-        return(cmath.sqrt(num))
-
+        rooted_num = (cmath.sqrt(num))
+        return rooted_num
     def subtract_numbers(num1: int, num2: int) -> int:
-        print(num1 - num2)
+        subtracted_num = (num1 - num2)
+        return subtracted_num
 
     def add(num_one: int, num_two: int) -> int:
         num = int(num_one + num_two)
@@ -21,8 +23,11 @@ class MyMath(ABC):
     def divide_numbers(num1: int, num2: int) -> int:
         if num2 == 0:
             raise ValueError("Division by zero is not allowed.")
-        return(num1 / num2)
+        divided_num = (num1 / num2)
+        return divided_num
+    
 
+    
     def multiply(num1: int, num2: int) -> int:
         num_3 = num1*num2
         return(num_3)

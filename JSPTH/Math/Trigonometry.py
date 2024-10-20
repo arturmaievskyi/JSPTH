@@ -65,7 +65,7 @@ class Trigonometry():
         if value < -1 or value > 1:
             raise ValueError("Input value for arcsine must be in the range [-1, 1]")
         arcsine_answ =  math.degrees(math.asin(value))
-        
+        return arcsine_answ
 
     def arccosine(value: float) -> float:
         """
@@ -82,8 +82,8 @@ class Trigonometry():
         """
         if value < -1 or value > 1:
             raise ValueError("Input value for arccosine must be in the range [-1, 1]")
-        return math.degrees(math.acos(value))
-    
+        arcosine_answ =  math.degrees(math.acos(value))
+        return arcosine_answ
 
     def arctangent(value: float) -> float:
         """
@@ -95,8 +95,8 @@ class Trigonometry():
         Returns:
         float: The arctangent of the value, in degrees.
         """
-        return math.degrees(math.atan(value))
-
+        arctagent_answ = math.degrees(math.atan(value))
+        return arctagent_answ
 
     def law_of_cosines(a: float, b: float, angle_in_degrees: float) -> float:
         """
