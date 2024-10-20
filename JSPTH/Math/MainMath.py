@@ -5,27 +5,27 @@ import cmath
 
 class MyMath(ABC):
     def square_number(num: int) -> int:
-        print(num**2)
+        return(num**2)
 
     def root(num: float) -> complex:
-        print(cmath.sqrt(num))
+        return(cmath.sqrt(num))
 
     def subtract_numbers(num1: int, num2: int) -> int:
         print(num1 - num2)
 
     def add(num_one: int, num_two: int) -> int:
         num = int(num_one + num_two)
-        print(num)
+        return(num)
 
 
     def divide_numbers(num1: int, num2: int) -> int:
         if num2 == 0:
             raise ValueError("Division by zero is not allowed.")
-        print(num1 / num2)
+        return(num1 / num2)
 
     def multiply(num1: int, num2: int) -> int:
         num_3 = num1*num2
-        print(num_3)
+        return(num_3)
 
 
     def factorial(n: int) -> int:
@@ -49,8 +49,4 @@ class MyMath(ABC):
             result = 1
             for i in range(2, n + 1):
                 result *= i
-        print(result)
-
-
-
-    
+        return(result)

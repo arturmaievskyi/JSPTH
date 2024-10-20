@@ -4,10 +4,10 @@ from . import MainMath as MM
 class GeometryMath():
 
     def sine(angle_rad: float) -> float:
-        print(math.sin(angle_rad))
+        return (math.sin(angle_rad))
 
     def cosine(angle_rad: float) -> float:
-        print(math.cos(angle_rad))
+        return(math.cos(angle_rad))
 
 
 
@@ -23,7 +23,7 @@ class GeometryMath():
         """
         if radius < 0:
             raise ValueError("Radius cannot be negative")
-        print(math.pi * radius**2)
+        return(math.pi * radius**2)
 
 
     def circumference_of_circle(radius: float) -> float:
@@ -38,7 +38,7 @@ class GeometryMath():
         """
         if radius < 0:
             raise ValueError("Radius cannot be negative")
-        print(2 * math.pi * radius)
+        return(2 * math.pi * radius)
 
 
     def volume_of_cone(radius: float, height: float) -> float:
@@ -54,7 +54,7 @@ class GeometryMath():
         """
         if radius < 0 or height < 0:
             raise ValueError("Radius or height cannot be negative")
-        print((1/3) * math.pi * radius**2 * height)
+        return((1/3) * math.pi * radius**2 * height)
 
     def surface_area_of_cone(radius: float, slant_height: float) -> float:
         """
@@ -69,7 +69,7 @@ class GeometryMath():
         """
         if radius < 0 or slant_height < 0:
             raise ValueError("Radius and slant height cannot be negative")
-        print(math.pi * radius * (radius + slant_height))
+        return(math.pi * radius * (radius + slant_height))
 
     def distance_between_points(x1: float, y1: float, x2: float, y2: float) -> float:
         """
@@ -82,4 +82,4 @@ class GeometryMath():
         Returns:
         float: The distance between the two points.
         """
-        print(MM.square_number((x2 - x1)**2 + (y2 - y1)**2))
+        return(math.sqrt((x2 - x1)**2 + (y2 - y1)**2))
