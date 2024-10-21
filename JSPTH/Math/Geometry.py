@@ -110,3 +110,5 @@ class GeometryMath():
         # Area calculation
         return math.sqrt(s * (s - a) * (s - b) * (s - c))
     
+
+    
