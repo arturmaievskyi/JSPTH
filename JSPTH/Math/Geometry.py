@@ -136,3 +136,17 @@ def circle_area(radius: float) -> float:
     float: The area of the circle.
     """
     return math.pi * radius ** 2
+
+
+def parallelogram_area(base: float, height: float) -> float:
+    """
+    Calculate the area of a parallelogram.
+    
+    Parameters:
+    base (float): The length of the base.
+    height (float): The height of the parallelogram.
+    
+    Returns:
+    float: The area of the parallelogram.
+    """
+    return base * height
