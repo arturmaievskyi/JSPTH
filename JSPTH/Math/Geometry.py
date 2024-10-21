@@ -150,3 +150,16 @@ def parallelogram_area(base: float, height: float) -> float:
     float: The area of the parallelogram.
     """
     return base * height
+
+
+def sphere_surface_area(radius: float) -> float:
+    """
+    Calculate the surface area of a sphere.
+    
+    Parameters:
+    radius (float): The radius of the sphere.
+    
+    Returns:
+    float: The surface area of the sphere.
+    """
+    return 4 * math.pi * radius ** 2
