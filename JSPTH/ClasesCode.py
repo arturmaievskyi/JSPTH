@@ -4,9 +4,15 @@ class Console(ABC):
 
 
     def log(arguments):
+        '''
+        its like print()
+        '''
         print(arguments)
 
     def Write(arguments):
+        '''
+        
+        '''
         Console.log(arguments)
 
     def WrtiteLine(arguments):
