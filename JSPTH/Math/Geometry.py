@@ -123,3 +123,16 @@ def circle_circumference(radius: float) -> float:
     float: The circumference of the circle.
     """
     return 2 * math.pi * radius
+
+
+def circle_area(radius: float) -> float:
+    """
+    Calculate the area of a circle.
+    
+    Parameters:
+    radius (float): The radius of the circle.
+    
+    Returns:
+    float: The area of the circle.
+    """
+    return math.pi * radius ** 2
