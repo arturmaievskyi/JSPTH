@@ -112,54 +112,54 @@ class GeometryMath():
     
 
 
-def circle_circumference(radius: float) -> float:
-    """
-    Calculate the circumference of a circle.
-    
-    Parameters:
-    radius (float): The radius of the circle.
-    
-    Returns:
-    float: The circumference of the circle.
-    """
-    return 2 * math.pi * radius
+    def circle_circumference(radius: float) -> float:
+        """
+        Calculate the circumference of a circle.
+        
+        Parameters:
+        radius (float): The radius of the circle.
+        
+        Returns:
+        float: The circumference of the circle.
+        """
+        return 2 * math.pi * radius
 
 
-def circle_area(radius: float) -> float:
-    """
-    Calculate the area of a circle.
-    
-    Parameters:
-    radius (float): The radius of the circle.
-    
-    Returns:
-    float: The area of the circle.
-    """
-    return math.pi * radius ** 2
+    def circle_area(radius: float) -> float:
+        """
+        Calculate the area of a circle.
+        
+        Parameters:
+        radius (float): The radius of the circle.
+        
+        Returns:
+        float: The area of the circle.
+        """
+        return math.pi * radius ** 2
 
 
-def parallelogram_area(base: float, height: float) -> float:
-    """
-    Calculate the area of a parallelogram.
-    
-    Parameters:
-    base (float): The length of the base.
-    height (float): The height of the parallelogram.
-    
-    Returns:
-    float: The area of the parallelogram.
-    """
-    return base * height
+    def parallelogram_area(base: float, height: float) -> float:
+        """
+        Calculate the area of a parallelogram.
+        
+        Parameters:
+        base (float): The length of the base.
+        height (float): The height of the parallelogram.
+        
+        Returns:
+        float: The area of the parallelogram.
+        """
+        return base * height
 
 
-def sphere_surface_area(radius: float) -> float:
-    """
-    Calculate the surface area of a sphere.
-    
-    Parameters:
-    radius (float): The radius of the sphere.
-    
-    Returns:
-    float: The surface area of the sphere.
-    """
-    return 4 * math.pi * radius ** 2
+    def sphere_surface_area(radius: float) -> float:
+        """
+        Calculate the surface area of a sphere.
+        
+        Parameters:
+        radius (float): The radius of the sphere.
+        
+        Returns:
+        float: The surface area of the sphere.
+        """
+        return 4 * math.pi * radius ** 2
