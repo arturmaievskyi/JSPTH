@@ -299,3 +299,21 @@ class Trigonometry():
         x = r * math.cos(theta_in_radians)
         y = r * math.sin(theta_in_radians)
         return (x, y)
+
+
+
+    def cartesian_to_polar(x: float, y: float) -> tuple:
+        """
+        Convert Cartesian coordinates to polar coordinates.
+        
+        Parameters:
+        x (float): The x-coordinate.
+        y (float): The y-coordinate.
+        
+        Returns:
+        tuple: A tuple containing the polar coordinates (r, theta) where
+            r is the radius and theta is the angle in degrees.
+        """
+        r = math.sqrt(x**2 + y**2)
+        theta = math.degrees(math.atan2(y, x))
+        return (r, theta)
