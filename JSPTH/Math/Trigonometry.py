@@ -128,4 +128,124 @@ class Trigonometry():
         A_in_radians = math.radians(A_in_degrees)
         B_in_radians = math.radians(B_in_degrees)
         return (a / math.sin(A_in_radians)) * math.sin(B_in_radians)
+    
 
+    def secant(angle_in_degrees: float) -> float:
+        """
+        Calculate the secant of an angle (in degrees).
+        
+        Parameters:
+        angle_in_degrees (float): The angle in degrees.
+        
+        Returns:
+        float: The secant of the angle.
+        
+        Raises:
+        ValueError: If the cosine of the angle is zero, secant is undefined.
+        """
+        cos_value = math.cos(math.radians(angle_in_degrees))
+        if cos_value == 0:
+            raise ValueError("Secant is undefined for this angle because cosine is zero.")
+        return 1 / cos_value
+
+    def cosecant(angle_in_degrees: float) -> float:
+        """
+        Calculate the cosecant of an angle (in degrees).
+        
+        Parameters:
+        angle_in_degrees (float): The angle in degrees.
+        
+        Returns:
+        float: The cosecant of the angle.
+        
+        Raises:
+        ValueError: If the sine of the angle is zero, cosecant is undefined.
+        """
+        sin_value = math.sin(math.radians(angle_in_degrees))
+        if sin_value == 0:
+            raise ValueError("Cosecant is undefined for this angle because sine is zero.")
+        return 1 / sin_value
+
+    def cotangent(angle_in_degrees: float) -> float:
+        """
+        Calculate the cotangent of an angle (in degrees).
+        
+        Parameters:
+        angle_in_degrees (float): The angle in degrees.
+        
+        Returns:
+        float: The cotangent of the angle.
+        
+        Raises:
+        ValueError: If the tangent of the angle is zero, cotangent is undefined.
+        """
+        tan_value = math.tan(math.radians(angle_in_degrees))
+        if tan_value == 0:
+            raise ValueError("Cotangent is undefined for this angle because tangent is zero.")
+        return 1 / tan_value
+
+    def sine_sum(angle_a_degrees: float, angle_b_degrees: float) -> float:
+        """
+        Calculate the sine of the sum of two angles (in degrees).
+        
+        Parameters:
+        angle_a_degrees (float): The first angle in degrees.
+        angle_b_degrees (float): The second angle in degrees.
+        
+        Returns:
+        float: The sine of the sum of the two angles.
+        """
+        angle_a_radians = math.radians(angle_a_degrees)
+        angle_b_radians = math.radians(angle_b_degrees)
+        return math.sin(angle_a_radians) * math.cos(angle_b_radians) + math.cos(angle_a_radians) * math.sin(angle_b_radians)
+
+    def cosine_sum(angle_a_degrees: float, angle_b_degrees: float) -> float:
+        """
+        Calculate the cosine of the sum of two angles (in degrees).
+        
+        Parameters:
+        angle_a_degrees (float): The first angle in degrees.
+        angle_b_degrees (float): The second angle in degrees.
+        
+        Returns:
+        float: The cosine of the sum of the two angles.
+        """
+        angle_a_radians = math.radians(angle_a_degrees)
+        angle_b_radians = math.radians(angle_b_degrees)
+        return math.cos(angle_a_radians) * math.cos(angle_b_radians) - math.sin(angle_a_radians) * math.sin(angle_b_radians)
+
+    def tangent_sum(angle_a_degrees: float, angle_b_degrees: float) -> float:
+        """
+        Calculate the tangent of the sum of two angles (in degrees).
+        
+        Parameters:
+        angle_a_degrees (float): The first angle in degrees.
+        angle_b_degrees (float): The second angle in degrees.
+        
+        Returns:
+        float: The tangent of the sum of the two angles.
+        
+        Raises:
+        ValueError: If the denominator is zero, the tangent is undefined.
+        """
+        angle_a_radians = math.radians(angle_a_degrees)
+        angle_b_radians = math.radians(angle_b_degrees)
+        denominator = 1 - math.tan(angle_a_radians) * math.tan(angle_b_radians)
+        if denominator == 0:
+            raise ValueError("Tangent of the sum is undefined for this angle.")
+        return (math.tan(angle_a_radians) + math.tan(angle_b_radians)) / denominator
+
+
+
+    def sine_double(angle_in_degrees: float) -> float:
+        """
+        Calculate the sine of a double angle (in degrees).
+        
+        Parameters:
+        angle_in_degrees (float): The angle in degrees.
+        
+        Returns:
+        float: The sine of the double angle.
+        """
+        angle_in_radians = math.radians(angle_in_degrees)
+        return 2 * math.sin(angle_in_radians) * math.cos(angle_in_radians)
