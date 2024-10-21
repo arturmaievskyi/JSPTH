@@ -111,4 +111,15 @@ class GeometryMath():
         return math.sqrt(s * (s - a) * (s - b) * (s - c))
     
 
+
+def circle_circumference(radius: float) -> float:
+    """
+    Calculate the circumference of a circle.
     
+    Parameters:
+    radius (float): The radius of the circle.
+    
+    Returns:
+    float: The circumference of the circle.
+    """
+    return 2 * math.pi * radius
