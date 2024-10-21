@@ -3,12 +3,6 @@ from . import MainMath as MM
 
 class GeometryMath():
 
-    def sine(angle_rad: float) -> float:
-        return (math.sin(angle_rad))
-
-    def cosine(angle_rad: float) -> float:
-        return(math.cos(angle_rad))
-
 
 
     def area_of_circle(radius: float) -> float:
