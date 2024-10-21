@@ -264,4 +264,21 @@ class Trigonometry():
         angle_in_radians = math.radians(angle_in_degrees)
         return math.cos(angle_in_radians)**2 - math.sin(angle_in_radians)**2
 
-    
+    def tangent_double(angle_in_degrees: float) -> float:
+        """
+        Calculate the tangent of a double angle (in degrees).
+        
+        Parameters:
+        angle_in_degrees (float): The angle in degrees.
+        
+        Returns:
+        float: The tangent of the double angle.
+        
+        Raises:
+        ValueError: If the denominator is zero, the tangent is undefined.
+        """
+        angle_in_radians = math.radians(angle_in_degrees)
+        denominator = 1 - math.tan(angle_in_radians)**2
+        if denominator == 0:
+            raise ValueError("Tangent of the double angle is undefined for this angle.")
+        return (2 * math.tan(angle_in_radians)) / denominator
