@@ -249,3 +249,19 @@ class Trigonometry():
         """
         angle_in_radians = math.radians(angle_in_degrees)
         return 2 * math.sin(angle_in_radians) * math.cos(angle_in_radians)
+
+
+    def cosine_double(angle_in_degrees: float) -> float:
+        """
+        Calculate the cosine of a double angle (in degrees).
+        
+        Parameters:
+        angle_in_degrees (float): The angle in degrees.
+        
+        Returns:
+        float: The cosine of the double angle.
+        """
+        angle_in_radians = math.radians(angle_in_degrees)
+        return math.cos(angle_in_radians)**2 - math.sin(angle_in_radians)**2
+
+    
