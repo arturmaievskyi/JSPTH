@@ -282,3 +282,20 @@ class Trigonometry():
         if denominator == 0:
             raise ValueError("Tangent of the double angle is undefined for this angle.")
         return (2 * math.tan(angle_in_radians)) / denominator
+
+
+    def polar_to_cartesian(r: float, theta_in_degrees: float) -> tuple:
+        """
+        Convert polar coordinates to Cartesian coordinates.
+        
+        Parameters:
+        r (float): The radius.
+        theta_in_degrees (float): The angle in degrees.
+        
+        Returns:
+        tuple: A tuple containing the Cartesian coordinates (x, y).
+        """
+        theta_in_radians = math.radians(theta_in_degrees)
+        x = r * math.cos(theta_in_radians)
+        y = r * math.sin(theta_in_radians)
+        return (x, y)
