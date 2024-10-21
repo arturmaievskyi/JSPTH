@@ -83,3 +83,30 @@ class GeometryMath():
         float: The distance between the two points.
         """
         return(math.sqrt((x2 - x1)**2 + (y2 - y1)**2))
+
+
+
+    def triangle_area_heron(a: float, b: float, c: float) -> float:
+        """
+        Calculate the area of a triangle using Heron's formula.
+        
+        Parameters:
+        a (float): Length of the first side.
+        b (float): Length of the second side.
+        c (float): Length of the third side.
+        
+        Returns:
+        float: The area of the triangle.
+        
+        Raises:
+        ValueError: If the sides do not form a valid triangle.
+        """
+        if a + b <= c or a + c <= b or b + c <= a:
+            raise ValueError("The provided sides do not form a valid triangle.")
+        
+        # Semi-perimeter
+        s = (a + b + c) / 2
+        
+        # Area calculation
+        return math.sqrt(s * (s - a) * (s - b) * (s - c))
+    
