@@ -54,3 +54,23 @@ class Functions(ABC):
         """Writes content to a file."""
         with open(file_path, 'w') as file:
             file.write(content)
+
+
+class EventEmitter:
+    def __init__(self):
+        self.events = {}
+
+    def on(self, event: str, callback):
+        if event not in self.events:
+            self.events[event] = []
+        self.events[event].append(callback)
+
+    def emit(self, event: str, *args, **kwargs):
+        if event in self.events:
+            for callback in self.events[event]:
+                callback(*args, **kwargs)
+
+# Example usage
+emitter = EventEmitter()
+emitter.on('greet', lambda name: print(f"Hello, {name}!"))
+emitter.emit('greet', 'Alice')
