@@ -128,3 +128,17 @@ def gcd(a: int, b: int) -> int:
     while b != 0:
         a, b = b, a % b
     return a
+
+
+def lcm(a: int, b: int) -> int:
+    """
+    Calculates the least common multiple (LCM) of two numbers.
+    
+    Parameters:
+    a (int): First number.
+    b (int): Second number.
+    
+    Returns:
+    int: The LCM of a and b.
+    """
+    return abs(a * b) // gcd(a, b)
