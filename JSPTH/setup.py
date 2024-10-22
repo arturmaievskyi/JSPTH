@@ -1,13 +1,7 @@
 #!/usr/bin/env python
-
+'''
 from io import open
 from setuptools import setup
-
-"""
-:authors: Peopl3s
-:license: Apache License, Version 2.0, see LICENSE file
-:copyright: (c) 2021 Peopl3s
-"""
 
 version = '0.1.0'
 
@@ -49,3 +43,4 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
     ]
 )
+'''
