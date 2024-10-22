@@ -164,3 +164,18 @@ def binomial_coefficient(n: int, k: int) -> int:
     
     # Factorial method to calculate binomial coefficient
     return math.factorial(n) // (math.factorial(k) * math.factorial(n - k))
+
+
+def arithmetic_progression(a1: float, d: float, n: int) -> float:
+    """
+    Finds the n-th term of an arithmetic progression.
+    
+    Parameters:
+    a1 (float): The first term of the sequence.
+    d (float): The common difference.
+    n (int): The term number to calculate.
+    
+    Returns:
+    float: The n-th term.
+    """
+    return a1 + (n - 1) * d
