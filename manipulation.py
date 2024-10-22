@@ -1,1 +1,1 @@
-from JSPTH import all_files
+from JSPTH.JSPTHarturmaievskyi import all_files
