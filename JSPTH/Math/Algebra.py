@@ -92,3 +92,23 @@ def logarithm_solver(a: float, b: float) -> float:
         raise ValueError("Base and result must be positive and base cannot be 1.")
     
     return math.log(b) / math.log(a)
+
+
+
+def polynomial_eval(coeffs: list, x: float) -> float:
+    """
+    Evaluates a polynomial at a given x-value.
+    
+    Parameters:
+    coeffs (list): List of coefficients [a_n, a_{n-1}, ..., a_0] of the polynomial.
+    x (float): The value at which to evaluate the polynomial.
+    
+    Returns:
+    float: The result of the polynomial evaluation.
+    """
+    result = 0
+    degree = len(coeffs) - 1
+    for i, coeff in enumerate(coeffs):
+        result += coeff * (x ** (degree - i))
+    
+    return result
