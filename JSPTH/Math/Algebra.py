@@ -142,3 +142,25 @@ def lcm(a: int, b: int) -> int:
     int: The LCM of a and b.
     """
     return abs(a * b) // gcd(a, b)
+
+
+
+def binomial_coefficient(n: int, k: int) -> int:
+    """
+    Calculates the binomial coefficient C(n, k), also known as "n choose k".
+    
+    Parameters:
+    n (int): The total number of items.
+    k (int): The number of items to choose.
+    
+    Returns:
+    int: The binomial coefficient.
+    
+    Raises:
+    ValueError: If k > n or if n or k is negative.
+    """
+    if k > n or n < 0 or k < 0:
+        raise ValueError("Invalid values for n and k.")
+    
+    # Factorial method to calculate binomial coefficient
+    return math.factorial(n) // (math.factorial(k) * math.factorial(n - k))
