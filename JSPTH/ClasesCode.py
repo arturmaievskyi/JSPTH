@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod 
 import asyncio
+from pathlib import Path
+
 
 class Console(ABC):
 
@@ -74,3 +76,13 @@ class EventEmitter:
 emitter = EventEmitter()
 emitter.on('greet', lambda name: print(f"Hello, {name}!"))
 emitter.emit('greet', 'Alice')
+
+
+class Managment(ABC):
+    def string_to_bytes(data: str) -> bytes:
+        """Converts a string to bytes."""
+        return data.encode('utf-8')
+
+    def bytes_to_string(data: bytes) -> str:
+        """Converts bytes to a string."""
+        return data.decode('utf-8')
