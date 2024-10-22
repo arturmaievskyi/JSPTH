@@ -194,3 +194,25 @@ def geometric_progression(a1: float, r: float, n: int) -> float:
     float: The n-th term.
     """
     return a1 * (r ** (n - 1))
+
+
+
+def geometric_series_sum(a1: float, r: float, n: int) -> float:
+    """
+    Calculates the sum of the first n terms of a geometric series.
+    
+    Parameters:
+    a1 (float): The first term of the series.
+    r (float): The common ratio.
+    n (int): The number of terms to sum.
+    
+    Returns:
+    float: The sum of the series.
+    
+    Raises:
+    ValueError: If r = 1 (the series would be infinite).
+    """
+    if r == 1:
+        raise ValueError("The common ratio cannot be 1 for a geometric series.")
+    
+    return a1 * (1 - r ** n) / (1 - r)
