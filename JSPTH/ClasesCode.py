@@ -73,9 +73,9 @@ class EventEmitter:
                 callback(*args, **kwargs)
 
 # Example usage
-emitter = EventEmitter()
-emitter.on('greet', lambda name: print(f"Hello, {name}!"))
-emitter.emit('greet', 'Alice')
+# emitter = EventEmitter()
+# emitter.on('greet', lambda name: print(f"Hello, {name}!"))
+# emitter.emit('greet', 'Alice')
 
 
 class Managment(ABC):
@@ -86,3 +86,6 @@ class Managment(ABC):
     def bytes_to_string(data: bytes) -> str:
         """Converts bytes to a string."""
         return data.decode('utf-8')
+    def get_full_path(*paths) -> str:
+        """Combines and resolves paths."""
+        return str(Path(*paths).resolve())
