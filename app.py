@@ -1,7 +1,7 @@
-from JSPTH.ClasesCode import Console
-from JSPTH.Math.MainMath import MyMath as Math
-from JSPTH.Math.Geometry import GeometryMath as Gm
-from JSPTH.Math.Trigonometry import Trigonometry as Tr
+from JSPTH.JSPTHarturmaievskyi.ClasesCode import Console
+from JSPTH.JSPTHarturmaievskyi.Math.MainMath import MyMath as Math
+from JSPTH.JSPTHarturmaievskyi.Math.Geometry import GeometryMath as Gm
+from JSPTH.JSPTHarturmaievskyi.Math.Trigonometry import Trigonometry as Tr
 
 '''
 Math.factorial(9)
