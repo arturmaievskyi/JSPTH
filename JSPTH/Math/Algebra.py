@@ -112,3 +112,19 @@ def polynomial_eval(coeffs: list, x: float) -> float:
         result += coeff * (x ** (degree - i))
     
     return result
+
+
+def gcd(a: int, b: int) -> int:
+    """
+    Calculates the greatest common divisor (GCD) of two numbers using Euclid's algorithm.
+    
+    Parameters:
+    a (int): First number.
+    b (int): Second number.
+    
+    Returns:
+    int: The GCD of a and b.
+    """
+    while b != 0:
+        a, b = b, a % b
+    return a
