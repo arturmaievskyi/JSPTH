@@ -179,3 +179,18 @@ def arithmetic_progression(a1: float, d: float, n: int) -> float:
     float: The n-th term.
     """
     return a1 + (n - 1) * d
+
+
+def geometric_progression(a1: float, r: float, n: int) -> float:
+    """
+    Finds the n-th term of a geometric progression.
+    
+    Parameters:
+    a1 (float): The first term of the sequence.
+    r (float): The common ratio.
+    n (int): The term number to calculate.
+    
+    Returns:
+    float: The n-th term.
+    """
+    return a1 * (r ** (n - 1))
