@@ -91,6 +91,20 @@ class Managment(ABC):
     
     def get_env_variable(var_name: str) -> str:
         return os.getenv(var_name)
+    
+    def create_buffer(size: int) -> bytearray:
+        """Creates a buffer of a specified size."""
+        return bytearray(size)
+
+    def write_to_buffer(buffer: bytearray, data: str, offset: int = 0):
+        """Writes data to a buffer at a specific offset."""
+        buffer[offset:offset+len(data)] = data.encode()
+
+    def read_from_buffer(buffer: bytearray, start: int = 0, end: int = None) -> str:
+        """Reads data from a buffer from start to end."""
+        if end is None:
+            end = len(buffer)
+        return buffer[start:end].decode()
 
 
 
