@@ -6,6 +6,8 @@ import threading
 import time
 import subprocess
 import shutil
+import hashlib
+import hmac
 
 
 
@@ -80,6 +82,14 @@ class FunctionsAndFiles(ABC):
     def join_paths(*paths) -> str:
         """Joins multiple paths together."""
         return str(Path(*paths))
+    
+    def read_file_in_chunks(file_path: str, chunk_size: int = 1024):
+        """Reads a file in chunks."""
+        with open(file_path, 'r') as file:
+            while chunk := file.read(chunk_size):
+                yield chunk
+
+
 
 
 class EventEmitter:
@@ -95,6 +105,10 @@ class EventEmitter:
         if event in self.events:
             for callback in self.events[event]:
                 callback(*args, **kwargs)
+
+
+
+
 
 class Managment(ABC):
     def string_to_bytes(data: str) -> bytes:
@@ -152,3 +166,19 @@ class ProccesorManagmet():
         """Executes a shell command and returns the output."""
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
         return result.stdout
+    
+
+
+class Crypto():
+    def generate_hash(data: str) -> str:
+        """Generates a SHA-256 hash of the input data."""
+        return hashlib.sha256(data.encode()).hexdigest()
+
+    def create_hmac(data: str, key: str, algorithm: str = 'sha256') -> str:
+        """Generates an HMAC using the specified key and algorithm."""
+        hmac_obj = hmac.new(key.encode(), data.encode(), hashlib.new(algorithm).name)
+        return hmac_obj.hexdigest()
+
+
+
+    
