@@ -94,17 +94,43 @@ class FunctionsAndFiles(ABC):
 
 class EventEmitter:
     def __init__(self):
-        self.events = {}
+        self._events = {}
 
-    def on(self, event: str, callback):
-        if event not in self.events:
-            self.events[event] = []
-        self.events[event].append(callback)
+    def on(self, event, listener):
+        """Registers an event listener (similar to 'on' in Node.js)."""
+        if event not in self._events:
+            self._events[event] = []
+        self._events[event].append(listener)
 
-    def emit(self, event: str, *args, **kwargs):
-        if event in self.events:
-            for callback in self.events[event]:
-                callback(*args, **kwargs)
+    def once(self, event, listener):
+        """Registers a one-time listener (executes once and then removes itself)."""
+        def one_time_listener(*args, **kwargs):
+            listener(*args, **kwargs)
+            self.off(event, one_time_listener)
+        self.on(event, one_time_listener)
+
+    def off(self, event, listener=None):
+        """Removes a specific listener or all listeners for an event (similar to 'off')."""
+        if listener:
+            if event in self._events:
+                self._events[event] = [l for l in self._events[event] if l != listener]
+        else:
+            if event in self._events:
+                del self._events[event]
+
+    def remove_all_listeners(self, event=None):
+        """Removes all listeners for a specific event or all events."""
+        if event:
+            if event in self._events:
+                del self._events[event]
+        else:
+            self._events.clear()
+
+    def emit(self, event, *args, **kwargs):
+        """Emits an event (similar to 'emit' in Node.js)."""
+        if event in self._events:
+            for listener in self._events[event]:
+                listener(*args, **kwargs)
 
 
 
