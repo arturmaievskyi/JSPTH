@@ -4,6 +4,8 @@ from pathlib import Path
 import os
 import threading
 import time
+import subprocess
+import shutil
 
 
 
@@ -45,7 +47,7 @@ class Console(ABC):
         return text_input
     
 
-class Functions(ABC):
+class FunctionsAndFiles(ABC):
     @abstractmethod
     async def async_task(name: str, delay: int, text: float):
         print(f"{float}{name}")
@@ -61,6 +63,10 @@ class Functions(ABC):
         """Writes content to a file."""
         with open(file_path, 'w') as file:
             file.write(content)
+
+    def copy_file(source: str, destination: str) -> None:
+        """Copies a file from source to destination."""
+        shutil.copy(source, destination)
 
 
 class EventEmitter:
@@ -125,3 +131,11 @@ class Timer:
         thread = threading.Thread(target=loop)
         thread.start()
         return thread
+
+
+
+class ProccesorManagmet():
+    def exec_command(command: str) -> str:
+        """Executes a shell command and returns the output."""
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        return result.stdout
