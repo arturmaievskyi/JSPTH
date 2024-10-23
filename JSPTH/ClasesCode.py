@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod 
 import asyncio
 from pathlib import Path
+import os
+import threading
+import time
+
+
 
 
 class Console(ABC):
@@ -47,7 +52,7 @@ class Functions(ABC):
         await asyncio.sleep(delay)
         print(f"Task {name} finished after {delay} seconds")
 
-    def read_file(file_path: str) -> str:
+    async def read_file(file_path: str) -> str:
         """Reads the contents of a file."""
         with open(file_path, 'r') as file:
             return file.read()
@@ -83,3 +88,26 @@ class Managment(ABC):
     def get_full_path(*paths) -> str:
         """Combines and resolves paths."""
         return str(Path(*paths).resolve())
+    
+    def get_env_variable(var_name: str) -> str:
+        return os.getenv(var_name)
+
+
+
+class Timer:
+    def set_timeout(callback, delay: int):
+        """Runs a callback function after a delay."""
+        timer = threading.Timer(delay, callback)
+        timer.start()
+        return timer
+    
+    def set_interval(callback, interval: int):
+        """Runs a callback repeatedly at a specified interval."""
+        def loop():
+            while True:
+                time.sleep(interval)
+                callback()
+
+        thread = threading.Thread(target=loop)
+        thread.start()
+        return thread
