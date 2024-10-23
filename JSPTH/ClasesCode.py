@@ -6,10 +6,6 @@ import threading
 import time
 import subprocess
 import shutil
-import hashlib
-import hmac
-
-
 
 
 class Console(ABC):
