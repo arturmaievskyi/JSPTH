@@ -72,12 +72,6 @@ class EventEmitter:
             for callback in self.events[event]:
                 callback(*args, **kwargs)
 
-# Example usage
-# emitter = EventEmitter()
-# emitter.on('greet', lambda name: print(f"Hello, {name}!"))
-# emitter.emit('greet', 'Alice')
-
-
 class Managment(ABC):
     def string_to_bytes(data: str) -> bytes:
         """Converts a string to bytes."""
