@@ -168,17 +168,3 @@ class ProccesorManagmet():
         return result.stdout
     
 
-
-class Crypto():
-    def generate_hash(data: str) -> str:
-        """Generates a SHA-256 hash of the input data."""
-        return hashlib.sha256(data.encode()).hexdigest()
-
-    def create_hmac(data: str, key: str, algorithm: str = 'sha256') -> str:
-        """Generates an HMAC using the specified key and algorithm."""
-        hmac_obj = hmac.new(key.encode(), data.encode(), hashlib.new(algorithm).name)
-        return hmac_obj.hexdigest()
-
-
-
-    
