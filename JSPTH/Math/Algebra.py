@@ -1,7 +1,6 @@
 import math
 
 
-
 class Algebra():
     def  quadratic_solver(a: float, b: float, c: float) -> tuple:
         """
@@ -125,19 +124,9 @@ class Algebra():
             a, b = b, a % b
         return a
 
-
-    def lcm(a: int, b: int) -> int:
-        """
-        Calculates the least common multiple (LCM) of two numbers.
-        
-        Parameters:
-        a (int): First number.
-        b (int): Second number.
-        
-        Returns:
-        int: The LCM of a and b.
-        """
-        return abs(a * b) // gcd(a, b)
+    def lcm(a:int, b:int) -> int:
+        """Returns the least common multiple (LCM) of two numbers."""
+        return abs(a * b) // math.gcd(a, b)
 
 
 
