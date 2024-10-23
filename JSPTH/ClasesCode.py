@@ -69,6 +69,19 @@ class FunctionsAndFiles(ABC):
         shutil.copy(source, destination)
 
 
+    def get_basename(file_path: str) -> str:
+        """Returns the base name of a file."""
+        return Path(file_path).name
+
+    def get_extension(file_path: str) -> str:
+        """Returns the file extension."""
+        return Path(file_path).suffix
+
+    def join_paths(*paths) -> str:
+        """Joins multiple paths together."""
+        return str(Path(*paths))
+
+
 class EventEmitter:
     def __init__(self):
         self.events = {}
