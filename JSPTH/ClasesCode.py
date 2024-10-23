@@ -6,7 +6,11 @@ import threading
 import time
 import subprocess
 import shutil
-
+import subprocess
+import signal
+from multiprocessing import Process, Pipe
+import sys
+from setproctitle import setproctitle
 
 class Console(ABC):
 
@@ -183,10 +187,78 @@ class Timer:
 
 
 
-class ProccesorManagmet():
-    def exec_command(command: str) -> str:
-        """Executes a shell command and returns the output."""
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
-        return result.stdout
+class ProcessManager:
     
+    def __init__(self):
+        print("Process Manager Initialized")
+
+    # Method to get the current process ID
+    def get_pid(self):
+        return os.getpid()
+
+    # Method to get the current working directory
+    def get_cwd(self):
+        return os.getcwd()
+
+    # Method to get environment variables
+    def get_env_vars(self):
+        return os.environ
+
+    # Method to get a specific environment variable
+    def get_env_var(self, var_name):
+        return os.environ.get(var_name)
+
+    # Method to spawn a process (equivalent to Node's `spawn`)
+    def spawn_process(self, command):
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+
+        if stdout:
+            print(f'stdout: {stdout.decode()}')
+        if stderr:
+            print(f'stderr: {stderr.decode()}')
+
+        return process.returncode
+
+    # Method to execute a command (equivalent to Node's `exec`)
+    def execute_command(self, command):
+        try:
+            result = subprocess.run(command, capture_output=True, text=True, check=True)
+            print(f'stdout: {result.stdout}')
+            if result.stderr:
+                print(f'stderr: {result.stderr}')
+        except subprocess.CalledProcessError as e:
+            print(f'Execution failed: {e}')
+
+    # Method to handle signals (equivalent to `process.on`)
+    def handle_signal(self, sig, handler):
+        signal.signal(sig, handler)
+
+    # Method to exit the process (equivalent to `process.exit`)
+    def exit_process(self, code=0):
+        sys.exit(code)
+
+    # Method to fork a process (equivalent to `child_process.fork`)
+    def fork_process(self, target_func):
+        parent_conn, child_conn = Pipe()
+        process = Process(target=target_func, args=(child_conn,))
+        process.start()
+        message = parent_conn.recv()
+        process.join()
+        return message
+
+    # Example target function for forking
+    @staticmethod
+    def child_process_example(conn):
+        conn.send('Hello from child process')
+        conn.close()
+
+    # Method to set process title (requires `setproctitle` package)
+    def set_process_title(self, title):
+        try:
+            
+            setproctitle(title)
+            print(f'Process title set to: {title}')
+        except ImportError:
+            print("setproctitle module is not installed. Please install it to use this functionality.")
 
