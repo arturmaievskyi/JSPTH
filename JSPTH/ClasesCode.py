@@ -167,24 +167,58 @@ class Managment(ABC):
 
 
 
-class Timer:
-    def set_timeout(callback, delay: int):
-        """Runs a callback function after a delay."""
-        timer = threading.Timer(delay, callback)
-        timer.start()
-        return timer
-    
-    def set_interval(callback, interval: int):
-        """Runs a callback repeatedly at a specified interval."""
-        def loop():
+class TimeManager:
+    def __init__(self):
+        self.timers = {}
+        self.intervals = {}
+
+    # setTimeout equivalent
+    def set_timeout(self, callback, delay):
+        def timeout():
+            time.sleep(delay / 1000)  # Convert milliseconds to seconds
+            callback()
+
+        # Start timeout in a new thread
+        thread = threading.Thread(target=timeout)
+        thread.start()
+        self.timers[thread.ident] = thread
+
+    # clearTimeout equivalent
+    def clear_timeout(self, timer_id):
+        timer = self.timers.get(timer_id)
+        if timer:
+            timer.join(timeout=0)  # Stop the timer thread
+            del self.timers[timer_id]
+
+    # setInterval equivalent
+    def set_interval(self, callback, interval):
+        def repeat():
             while True:
-                time.sleep(interval)
+                time.sleep(interval / 1000)  # Convert milliseconds to seconds
                 callback()
 
-        thread = threading.Thread(target=loop)
+        # Start interval in a new thread
+        thread = threading.Thread(target=repeat)
+        thread.daemon = True  # Daemon thread so it terminates with the program
         thread.start()
-        return thread
+        self.intervals[thread.ident] = thread
 
+    # clearInterval equivalent
+    def clear_interval(self, interval_id):
+        interval = self.intervals.get(interval_id)
+        if interval:
+            interval.join(timeout=0)  # Stop the interval thread
+            del self.intervals[interval_id]
+
+    # process.hrtime equivalent
+    def hrtime(self, start=None):
+        if start:
+            # Return the difference between the current time and the start time
+            end = time.perf_counter_ns()
+            return end - start
+        else:
+            # Return current high-resolution time
+            return time.perf_counter_ns()
 
 
 class ProcessManager:
