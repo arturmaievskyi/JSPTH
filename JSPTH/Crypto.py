@@ -1,3 +1,8 @@
+'''
+The file written with ChatGPT help
+'''
+
+
 import hashlib
 import hmac
 import os
