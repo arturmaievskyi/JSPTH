@@ -14,6 +14,10 @@ class CryptoUtils:
     # Hashing Function
     def create_hash(self, data: str, algorithm: str = 'sha256') -> str:
         """Generates a hash of the input data using the specified algorithm."""
+        '''
+        Purpose: Generates a hash (a fixed-length fingerprint) of the input data using the specified algorithm (default: SHA-256).
+        Usage: Hashing is useful for integrity checks, where the hash of data is compared to ensure nothing has changed.
+        '''
         hash_obj = hashlib.new(algorithm)
         hash_obj.update(data.encode())
         return hash_obj.hexdigest()
@@ -21,12 +25,21 @@ class CryptoUtils:
     # HMAC Function
     def create_hmac(self, data: str, key: str, algorithm: str = 'sha256') -> str:
         """Generates an HMAC using the specified key and algorithm."""
+        '''
+        Purpose: Creates an HMAC using a secret key and a hash function (default: SHA-256).
+        Usage: HMAC ensures both data integrity and authenticity, meaning the message has not been altered and is from a verified source.
+        '''
         hmac_obj = hmac.new(key.encode(), data.encode(), hashlib.new(algorithm).name)
         return hmac_obj.hexdigest()
 
     # AES Symmetric Encryption
     def encrypt_aes(self, data: str, key: bytes, iv: bytes) -> bytes:
         """Encrypts data using AES (256-bit key) in CBC mode."""
+        '''
+        Purpose: Encrypts and decrypts data using AES in CBC mode (Cipher Block Chaining). A key and an iv (initialization vector) are required for both encryption and decryption.
+        Padding: AES requires the data to be in blocks of 16 bytes, so padding is added when the data length is not a multiple of 16.
+        Usage: Symmetric encryption is ideal for encrypting large volumes of data where both the sender and receiver share a secret key.
+        '''
         cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=self.backend)
         encryptor = cipher.encryptor()
         padded_data = data + (16 - len(data) % 16) * ' '  # Padding for AES block size
@@ -35,6 +48,13 @@ class CryptoUtils:
     # AES Symmetric Decryption
     def decrypt_aes(self, encrypted_data: bytes, key: bytes, iv: bytes) -> str:
         """Decrypts AES-encrypted data."""
+        '''
+        Purpose: RSA is used for encrypting small amounts of data (e.g., keys) or securing communication between two parties where they don't share a secret key. 
+        It uses a public key for encryption and a private key for decryption.
+        Key Generation: The generate_rsa_keys method creates a pair of RSA keys (public and private) that can be used for encryption and decryption.
+        Usage: RSA is widely used in secure communication (e.g., HTTPS).
+
+        '''
         cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=self.backend)
         decryptor = cipher.decryptor()
         decrypted_data = decryptor.update(encrypted_data) + decryptor.finalize()

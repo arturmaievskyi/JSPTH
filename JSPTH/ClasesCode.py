@@ -8,9 +8,9 @@ import subprocess
 import shutil
 import subprocess
 import signal
-from multiprocessing import Process, Pipe
 import sys
 from setproctitle import setproctitle
+from multiprocessing import Process, Pipe, Queue
 
 class Console(ABC):
 
