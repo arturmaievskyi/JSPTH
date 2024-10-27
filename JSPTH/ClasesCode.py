@@ -341,3 +341,111 @@ class Convertation():
         converted_value = value_in_seconds / conversion_factors[to_unit]
         
         return converted_value
+    
+class StorageConverter:
+    # Conversion factors for storage units in bytes (binary system)
+    units_in_bytes = {
+        'bytes': 1,
+        'kilobytes': 1024,
+        'megabytes': 1024 ** 2,
+        'gigabytes': 1024 ** 3,
+        'terabytes': 1024 ** 4,
+        'petabytes': 1024 ** 5,
+        'exabytes': 1024 ** 6
+    }
+
+    @staticmethod
+    def convert_storage(value: float, from_unit: str, to_unit: str) -> float:
+        """
+        Convert a storage value from one unit to another.
+        """
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in StorageConverter.units_in_bytes:
+            raise ValueError(f"Unsupported 'from' unit: {from_unit}")
+        if to_unit not in StorageConverter.units_in_bytes:
+            raise ValueError(f"Unsupported 'to' unit: {to_unit}")
+
+        # Convert the input value to bytes, then to the target unit
+        value_in_bytes = value * StorageConverter.units_in_bytes[from_unit]
+        converted_value = value_in_bytes / StorageConverter.units_in_bytes[to_unit]
+        
+        return converted_value
+
+    @staticmethod
+    def format_storage(size_in_bytes: float) -> str:
+        """
+        Format a byte size into a readable string (e.g., '10.5 MB').
+        """
+        for unit in ['bytes', 'kilobytes', 'megabytes', 'gigabytes', 'terabytes', 'petabytes', 'exabytes']:
+            if size_in_bytes < StorageConverter.units_in_bytes[unit] * 1024 or unit == 'exabytes':
+                formatted_size = size_in_bytes / StorageConverter.units_in_bytes[unit]
+                return f"{formatted_size:.2f} {unit.capitalize()}"
+        return f"{size_in_bytes:.2f} Bytes"
+
+    @staticmethod
+    def data_transfer_time(file_size: float, file_unit: str, bandwidth: float, bandwidth_unit: str) -> float:
+        """
+        Calculate the time required to transfer a file given a certain bandwidth.
+        
+        :param file_size: Size of the file to transfer.
+        :param file_unit: Unit of file size (e.g., 'megabytes', 'gigabytes').
+        :param bandwidth: Transfer rate (e.g., 100 for 100 Mbps).
+        :param bandwidth_unit: Bandwidth unit (e.g., 'mbps' for megabits per second).
+        :return: Time in seconds required to transfer the file.
+        """
+        # Conversion factors for bandwidth (convert to bits per second)
+        bandwidth_units_in_bps = {
+            'bps': 1,
+            'kbps': 10**3,
+            'mbps': 10**6,
+            'gbps': 10**9,
+        }
+        
+        # Validate units
+        file_unit = file_unit.lower()
+        bandwidth_unit = bandwidth_unit.lower()
+        if file_unit not in StorageConverter.units_in_bytes:
+            raise ValueError(f"Unsupported file unit: {file_unit}")
+        if bandwidth_unit not in bandwidth_units_in_bps:
+            raise ValueError(f"Unsupported bandwidth unit: {bandwidth_unit}")
+
+        # Convert file size to bits and bandwidth to bits per second
+        file_size_in_bits = StorageConverter.convert_storage(file_size, file_unit, 'bytes') * 8
+        bandwidth_in_bps = bandwidth * bandwidth_units_in_bps[bandwidth_unit]
+        
+        # Calculate time in seconds
+        transfer_time_seconds = file_size_in_bits / bandwidth_in_bps
+        return transfer_time_seconds
+
+    @staticmethod
+    def storage_needed_for_duration(bitrate: float, bitrate_unit: str, duration_seconds: int) -> float:
+        """
+        Calculate the required storage for a specific duration at a given bitrate.
+        
+        :param bitrate: Data rate (e.g., 5 for 5 Mbps).
+        :param bitrate_unit: Unit of bitrate (e.g., 'mbps').
+        :param duration_seconds: Duration in seconds.
+        :return: Required storage in bytes.
+        """
+        # Conversion factors for bitrate (convert to bits per second)
+        bitrate_units_in_bps = {
+            'bps': 1,
+            'kbps': 10**3,
+            'mbps': 10**6,
+            'gbps': 10**9,
+        }
+        
+        # Validate bitrate unit
+        bitrate_unit = bitrate_unit.lower()
+        if bitrate_unit not in bitrate_units_in_bps:
+            raise ValueError(f"Unsupported bitrate unit: {bitrate_unit}")
+
+        # Convert bitrate to bits per second and calculate total storage needed
+        bitrate_in_bps = bitrate * bitrate_units_in_bps[bitrate_unit]
+        total_bits = bitrate_in_bps * duration_seconds
+        total_bytes = total_bits / 8  # Convert bits to bytes
+
+        return total_bytes
