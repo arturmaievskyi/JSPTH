@@ -48,7 +48,6 @@ class Console(ABC):
         text_input = float(input(text))
         return text_input
     
-
 class FunctionsAndFiles(ABC):
     @abstractmethod
     async def async_task(name: str, delay: int, text: float):
@@ -88,9 +87,6 @@ class FunctionsAndFiles(ABC):
         with open(file_path, 'r') as file:
             while chunk := file.read(chunk_size):
                 yield chunk
-
-
-
 
 class EventEmitter:
     def __init__(self):
@@ -132,10 +128,6 @@ class EventEmitter:
             for listener in self._events[event]:
                 listener(*args, **kwargs)
 
-
-
-
-
 class Managment(ABC):
     def string_to_bytes(data: str) -> bytes:
         """Converts a string to bytes."""
@@ -164,8 +156,6 @@ class Managment(ABC):
         if end is None:
             end = len(buffer)
         return buffer[start:end].decode()
-
-
 
 class TimeManager:
     def __init__(self):
@@ -219,7 +209,6 @@ class TimeManager:
         else:
             # Return current high-resolution time
             return time.perf_counter_ns()
-
 
 class ProcessManager:
     
@@ -296,3 +285,59 @@ class ProcessManager:
         except ImportError:
             print("setproctitle module is not installed. Please install it to use this functionality.")
 
+class Convertation():
+    def convert_distance(value: float, from_unit: str, to_unit: str) -> float:
+        # Conversion factors to meters
+        conversion_factors = {
+            'miles': 1609.34,
+            'kilometers': 1000.0,
+            'meters': 1.0,
+            'centimeters': 0.01,
+            'millimeters': 0.001,
+            'yards': 0.9144,
+            'feet': 0.3048,
+            'inches': 0.0254
+        }
+        
+        # Normalize unit names
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in conversion_factors:
+            raise ValueError(f"Unsupported unit for 'from': {from_unit}")
+        if to_unit not in conversion_factors:
+            raise ValueError(f"Unsupported unit for 'to': {to_unit}")
+
+        # Convert 'value' to meters, then from meters to the target unit
+        value_in_meters = value * conversion_factors[from_unit]
+        converted_value = value_in_meters / conversion_factors[to_unit]
+        
+        return converted_value
+
+
+    def convert_time(value: float, from_unit: str, to_unit: str) -> float:
+        # Conversion factors to seconds
+        conversion_factors = {
+            'seconds': 1.0,
+            'minutes': 60.0,
+            'hours': 3600.0,
+            'days': 86400.0,
+            'weeks': 604800.0
+        }
+        
+        # Normalize unit names
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in conversion_factors:
+            raise ValueError(f"Unsupported unit for 'from': {from_unit}")
+        if to_unit not in conversion_factors:
+            raise ValueError(f"Unsupported unit for 'to': {to_unit}")
+
+        # Convert 'value' to seconds, then from seconds to the target unit
+        value_in_seconds = value * conversion_factors[from_unit]
+        converted_value = value_in_seconds / conversion_factors[to_unit]
+        
+        return converted_value
