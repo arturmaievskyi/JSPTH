@@ -541,3 +541,94 @@ class AreaConverter:
         area_in_square_meters = 0.5 * base * height
         return AreaConverter.convert_area(area_in_square_meters, 'square_meters', unit)
 
+class VolumeConverter:
+    # Conversion factors for volume units (liters as base unit)
+    units_in_liters = {
+        'liters': 1,
+        'milliliters': 1e-3,
+        'cubic_meters': 1e3,
+        'cubic_centimeters': 1e-3,
+        'cubic_inches': 0.0163871,
+        'cubic_feet': 28.3168,
+        'cubic_yards': 764.555,
+        'gallons': 3.78541,
+        'quarts': 0.946353,
+        'pints': 0.473176,
+        'fluid_ounces': 0.0295735
+    }
+
+    @staticmethod
+    def convert_volume(value: float, from_unit: str, to_unit: str) -> float:
+        """
+        Convert a volume value from one unit to another.
+        
+        :param value: Numeric volume value to convert.
+        :param from_unit: Unit of the input volume (e.g., "liters", "gallons").
+        :param to_unit: Target unit to convert to (e.g., "cubic meters").
+        :return: Converted volume value.
+        """
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in VolumeConverter.units_in_liters:
+            raise ValueError(f"Unsupported 'from' unit: {from_unit}")
+        if to_unit not in VolumeConverter.units_in_liters:
+            raise ValueError(f"Unsupported 'to' unit: {to_unit}")
+
+        # Convert the value to liters, then to the target unit
+        value_in_liters = value * VolumeConverter.units_in_liters[from_unit]
+        converted_value = value_in_liters / VolumeConverter.units_in_liters[to_unit]
+        
+        return converted_value
+
+    @staticmethod
+    def format_volume(size_in_liters: float) -> str:
+        """
+        Format a volume size into a readable string (e.g., '10.5 liters').
+        
+        :param size_in_liters: Volume size in liters.
+        :return: Readable formatted string.
+        """
+        for unit, factor in VolumeConverter.units_in_liters.items():
+            if size_in_liters < factor * 1000 or unit == 'cubic_meters':
+                formatted_size = size_in_liters / factor
+                return f"{formatted_size:.2f} {unit.replace('_', ' ').capitalize()}"
+        return f"{size_in_liters:.2f} Liters"
+
+    @staticmethod
+    def volume_of_cube(side: float, unit: str = "liters") -> float:
+        """
+        Calculate the volume of a cube.
+        
+        :param side: Length of a side of the cube.
+        :param unit: Desired output unit (default is 'liters').
+        :return: Volume of the cube in the specified unit.
+        """
+        volume_in_cubic_meters = side ** 3
+        return VolumeConverter.convert_volume(volume_in_cubic_meters, 'cubic_meters', unit)
+
+    @staticmethod
+    def volume_of_sphere(radius: float, unit: str = "liters") -> float:
+        """
+        Calculate the volume of a sphere.
+        
+        :param radius: Radius of the sphere.
+        :param unit: Desired output unit (default is 'liters').
+        :return: Volume of the sphere in the specified unit.
+        """
+        volume_in_cubic_meters = (4/3) * 3.14159 * (radius ** 3)
+        return VolumeConverter.convert_volume(volume_in_cubic_meters, 'cubic_meters', unit)
+
+    @staticmethod
+    def volume_of_cylinder(radius: float, height: float, unit: str = "liters") -> float:
+        """
+        Calculate the volume of a cylinder.
+        
+        :param radius: Radius of the base of the cylinder.
+        :param height: Height of the cylinder.
+        :param unit: Desired output unit (default is 'liters').
+        :return: Volume of the cylinder in the specified unit.
+        """
+        volume_in_cubic_meters = 3.14159 * (radius ** 2) * height
+        return VolumeConverter.convert_volume(volume_in_cubic_meters, 'cubic_meters', unit)
