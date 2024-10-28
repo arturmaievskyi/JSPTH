@@ -449,3 +449,95 @@ class StorageConverter:
         total_bytes = total_bits / 8  # Convert bits to bytes
 
         return total_bytes
+
+class AreaConverter:
+    # Conversion factors for area units (square meters as base unit)
+    units_in_square_meters = {
+        'square_meters': 1,
+        'square_kilometers': 1e6,
+        'square_centimeters': 1e-4,
+        'square_millimeters': 1e-6,
+        'square_inches': 0.00064516,
+        'square_feet': 0.092903,
+        'square_yards': 0.836127,
+        'acres': 4046.8564224,
+        'hectares': 10000
+    }
+
+    @staticmethod
+    def convert_area(value: float, from_unit: str, to_unit: str) -> float:
+        """
+        Convert an area value from one unit to another.
+        
+        :param value: Numeric area value to convert.
+        :param from_unit: Unit of the input area (e.g., "square_meters", "acres").
+        :param to_unit: Target unit to convert to (e.g., "square_kilometers").
+        :return: Converted area value.
+        """
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in AreaConverter.units_in_square_meters:
+            raise ValueError(f"Unsupported 'from' unit: {from_unit}")
+        if to_unit not in AreaConverter.units_in_square_meters:
+            raise ValueError(f"Unsupported 'to' unit: {to_unit}")
+
+        # Convert the value to square meters, then to the target unit
+        value_in_square_meters = value * AreaConverter.units_in_square_meters[from_unit]
+        converted_value = value_in_square_meters / AreaConverter.units_in_square_meters[to_unit]
+        
+        return converted_value
+
+    @staticmethod
+    def format_area(size_in_square_meters: float) -> str:
+        """
+        Format an area size into a readable string (e.g., '10.5 square meters').
+        
+        :param size_in_square_meters: Area size in square meters.
+        :return: Readable formatted string.
+        """
+        for unit, factor in AreaConverter.units_in_square_meters.items():
+            if size_in_square_meters < factor * 1000 or unit == 'hectares':
+                formatted_size = size_in_square_meters / factor
+                return f"{formatted_size:.2f} {unit.replace('_', ' ').capitalize()}"
+        return f"{size_in_square_meters:.2f} Square meters"
+
+    @staticmethod
+    def area_of_rectangle(length: float, width: float, unit: str = "square_meters") -> float:
+        """
+        Calculate the area of a rectangle.
+        
+        :param length: Length of the rectangle.
+        :param width: Width of the rectangle.
+        :param unit: Desired output unit (default is 'square_meters').
+        :return: Area of the rectangle in the specified unit.
+        """
+        area_in_square_meters = length * width
+        return AreaConverter.convert_area(area_in_square_meters, 'square_meters', unit)
+
+    @staticmethod
+    def area_of_circle(radius: float, unit: str = "square_meters") -> float:
+        """
+        Calculate the area of a circle.
+        
+        :param radius: Radius of the circle.
+        :param unit: Desired output unit (default is 'square_meters').
+        :return: Area of the circle in the specified unit.
+        """
+        area_in_square_meters = 3.14159 * (radius ** 2)
+        return AreaConverter.convert_area(area_in_square_meters, 'square_meters', unit)
+
+    @staticmethod
+    def area_of_triangle(base: float, height: float, unit: str = "square_meters") -> float:
+        """
+        Calculate the area of a triangle.
+        
+        :param base: Base length of the triangle.
+        :param height: Height of the triangle.
+        :param unit: Desired output unit (default is 'square_meters').
+        :return: Area of the triangle in the specified unit.
+        """
+        area_in_square_meters = 0.5 * base * height
+        return AreaConverter.convert_area(area_in_square_meters, 'square_meters', unit)
+
