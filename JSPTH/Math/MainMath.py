@@ -1,13 +1,10 @@
 '''
 Please dont forget to make a variable when dou are going to 
-
-
-
 '''
+
+
 from abc import ABC, abstractmethod
 import cmath
-
-
 
 class MyMath(ABC):
     def square_number(num: int) -> int:
