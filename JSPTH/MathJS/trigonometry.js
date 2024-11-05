@@ -62,6 +62,8 @@ class Trigonometry {
     tangent_sum(x, y) {
         if (Math.cos(x) * Math.cos(y) === 0) throw new Error("Tangent sum undefined for these angles");
         return (Math.tan(x) + Math.tan(y)) / (1 - Math.tan(x) * Math.tan(y));
+        if (Math.cos(x) * Math.cos(y) === 0) throw new Error("Tangent sum undefined for these angles");
+       return (Math.tan(x) + Math.tan(y)) / (1 - Math.tan(x) * Math.tan(y));
     }
 
     // Double angle identities

@@ -48,7 +48,6 @@ class Console(ABC):
         text_input = float(input(text))
         return text_input
     
-
 class FunctionsAndFiles(ABC):
     @abstractmethod
     async def async_task(name: str, delay: int, text: float):
@@ -88,9 +87,6 @@ class FunctionsAndFiles(ABC):
         with open(file_path, 'r') as file:
             while chunk := file.read(chunk_size):
                 yield chunk
-
-
-
 
 class EventEmitter:
     def __init__(self):
@@ -132,10 +128,6 @@ class EventEmitter:
             for listener in self._events[event]:
                 listener(*args, **kwargs)
 
-
-
-
-
 class Managment(ABC):
     def string_to_bytes(data: str) -> bytes:
         """Converts a string to bytes."""
@@ -164,8 +156,6 @@ class Managment(ABC):
         if end is None:
             end = len(buffer)
         return buffer[start:end].decode()
-
-
 
 class TimeManager:
     def __init__(self):
@@ -219,7 +209,6 @@ class TimeManager:
         else:
             # Return current high-resolution time
             return time.perf_counter_ns()
-
 
 class ProcessManager:
     
@@ -296,3 +285,350 @@ class ProcessManager:
         except ImportError:
             print("setproctitle module is not installed. Please install it to use this functionality.")
 
+class Convertation():
+    def convert_distance(value: float, from_unit: str, to_unit: str) -> float:
+        # Conversion factors to meters
+        conversion_factors = {
+            'miles': 1609.34,
+            'kilometers': 1000.0,
+            'meters': 1.0,
+            'centimeters': 0.01,
+            'millimeters': 0.001,
+            'yards': 0.9144,
+            'feet': 0.3048,
+            'inches': 0.0254
+        }
+        
+        # Normalize unit names
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in conversion_factors:
+            raise ValueError(f"Unsupported unit for 'from': {from_unit}")
+        if to_unit not in conversion_factors:
+            raise ValueError(f"Unsupported unit for 'to': {to_unit}")
+
+        # Convert 'value' to meters, then from meters to the target unit
+        value_in_meters = value * conversion_factors[from_unit]
+        converted_value = value_in_meters / conversion_factors[to_unit]
+        
+        return converted_value
+
+
+    def convert_time(value: float, from_unit: str, to_unit: str) -> float:
+        # Conversion factors to seconds
+        conversion_factors = {
+            'seconds': 1.0,
+            'minutes': 60.0,
+            'hours': 3600.0,
+            'days': 86400.0,
+            'weeks': 604800.0
+        }
+        
+        # Normalize unit names
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in conversion_factors:
+            raise ValueError(f"Unsupported unit for 'from': {from_unit}")
+        if to_unit not in conversion_factors:
+            raise ValueError(f"Unsupported unit for 'to': {to_unit}")
+
+        # Convert 'value' to seconds, then from seconds to the target unit
+        value_in_seconds = value * conversion_factors[from_unit]
+        converted_value = value_in_seconds / conversion_factors[to_unit]
+        
+        return converted_value
+    
+class StorageConverter:
+    # Conversion factors for storage units in bytes (binary system)
+    units_in_bytes = {
+        'bytes': 1,
+        'kilobytes': 1024,
+        'megabytes': 1024 ** 2,
+        'gigabytes': 1024 ** 3,
+        'terabytes': 1024 ** 4,
+        'petabytes': 1024 ** 5,
+        'exabytes': 1024 ** 6
+    }
+
+    @staticmethod
+    def convert_storage(value: float, from_unit: str, to_unit: str) -> float:
+        """
+        Convert a storage value from one unit to another.
+        """
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in StorageConverter.units_in_bytes:
+            raise ValueError(f"Unsupported 'from' unit: {from_unit}")
+        if to_unit not in StorageConverter.units_in_bytes:
+            raise ValueError(f"Unsupported 'to' unit: {to_unit}")
+
+        # Convert the input value to bytes, then to the target unit
+        value_in_bytes = value * StorageConverter.units_in_bytes[from_unit]
+        converted_value = value_in_bytes / StorageConverter.units_in_bytes[to_unit]
+        
+        return converted_value
+
+    @staticmethod
+    def format_storage(size_in_bytes: float) -> str:
+        """
+        Format a byte size into a readable string (e.g., '10.5 MB').
+        """
+        for unit in ['bytes', 'kilobytes', 'megabytes', 'gigabytes', 'terabytes', 'petabytes', 'exabytes']:
+            if size_in_bytes < StorageConverter.units_in_bytes[unit] * 1024 or unit == 'exabytes':
+                formatted_size = size_in_bytes / StorageConverter.units_in_bytes[unit]
+                return f"{formatted_size:.2f} {unit.capitalize()}"
+        return f"{size_in_bytes:.2f} Bytes"
+
+    @staticmethod
+    def data_transfer_time(file_size: float, file_unit: str, bandwidth: float, bandwidth_unit: str) -> float:
+        """
+        Calculate the time required to transfer a file given a certain bandwidth.
+        
+        :param file_size: Size of the file to transfer.
+        :param file_unit: Unit of file size (e.g., 'megabytes', 'gigabytes').
+        :param bandwidth: Transfer rate (e.g., 100 for 100 Mbps).
+        :param bandwidth_unit: Bandwidth unit (e.g., 'mbps' for megabits per second).
+        :return: Time in seconds required to transfer the file.
+        """
+        # Conversion factors for bandwidth (convert to bits per second)
+        bandwidth_units_in_bps = {
+            'bps': 1,
+            'kbps': 10**3,
+            'mbps': 10**6,
+            'gbps': 10**9,
+        }
+        
+        # Validate units
+        file_unit = file_unit.lower()
+        bandwidth_unit = bandwidth_unit.lower()
+        if file_unit not in StorageConverter.units_in_bytes:
+            raise ValueError(f"Unsupported file unit: {file_unit}")
+        if bandwidth_unit not in bandwidth_units_in_bps:
+            raise ValueError(f"Unsupported bandwidth unit: {bandwidth_unit}")
+
+        # Convert file size to bits and bandwidth to bits per second
+        file_size_in_bits = StorageConverter.convert_storage(file_size, file_unit, 'bytes') * 8
+        bandwidth_in_bps = bandwidth * bandwidth_units_in_bps[bandwidth_unit]
+        
+        # Calculate time in seconds
+        transfer_time_seconds = file_size_in_bits / bandwidth_in_bps
+        return transfer_time_seconds
+
+    @staticmethod
+    def storage_needed_for_duration(bitrate: float, bitrate_unit: str, duration_seconds: int) -> float:
+        """
+        Calculate the required storage for a specific duration at a given bitrate.
+        
+        :param bitrate: Data rate (e.g., 5 for 5 Mbps).
+        :param bitrate_unit: Unit of bitrate (e.g., 'mbps').
+        :param duration_seconds: Duration in seconds.
+        :return: Required storage in bytes.
+        """
+        # Conversion factors for bitrate (convert to bits per second)
+        bitrate_units_in_bps = {
+            'bps': 1,
+            'kbps': 10**3,
+            'mbps': 10**6,
+            'gbps': 10**9,
+        }
+        
+        # Validate bitrate unit
+        bitrate_unit = bitrate_unit.lower()
+        if bitrate_unit not in bitrate_units_in_bps:
+            raise ValueError(f"Unsupported bitrate unit: {bitrate_unit}")
+
+        # Convert bitrate to bits per second and calculate total storage needed
+        bitrate_in_bps = bitrate * bitrate_units_in_bps[bitrate_unit]
+        total_bits = bitrate_in_bps * duration_seconds
+        total_bytes = total_bits / 8  # Convert bits to bytes
+
+        return total_bytes
+
+class AreaConverter:
+    # Conversion factors for area units (square meters as base unit)
+    units_in_square_meters = {
+        'square_meters': 1,
+        'square_kilometers': 1e6,
+        'square_centimeters': 1e-4,
+        'square_millimeters': 1e-6,
+        'square_inches': 0.00064516,
+        'square_feet': 0.092903,
+        'square_yards': 0.836127,
+        'acres': 4046.8564224,
+        'hectares': 10000
+    }
+
+    @staticmethod
+    def convert_area(value: float, from_unit: str, to_unit: str) -> float:
+        """
+        Convert an area value from one unit to another.
+        
+        :param value: Numeric area value to convert.
+        :param from_unit: Unit of the input area (e.g., "square_meters", "acres").
+        :param to_unit: Target unit to convert to (e.g., "square_kilometers").
+        :return: Converted area value.
+        """
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in AreaConverter.units_in_square_meters:
+            raise ValueError(f"Unsupported 'from' unit: {from_unit}")
+        if to_unit not in AreaConverter.units_in_square_meters:
+            raise ValueError(f"Unsupported 'to' unit: {to_unit}")
+
+        # Convert the value to square meters, then to the target unit
+        value_in_square_meters = value * AreaConverter.units_in_square_meters[from_unit]
+        converted_value = value_in_square_meters / AreaConverter.units_in_square_meters[to_unit]
+        
+        return converted_value
+
+    @staticmethod
+    def format_area(size_in_square_meters: float) -> str:
+        """
+        Format an area size into a readable string (e.g., '10.5 square meters').
+        
+        :param size_in_square_meters: Area size in square meters.
+        :return: Readable formatted string.
+        """
+        for unit, factor in AreaConverter.units_in_square_meters.items():
+            if size_in_square_meters < factor * 1000 or unit == 'hectares':
+                formatted_size = size_in_square_meters / factor
+                return f"{formatted_size:.2f} {unit.replace('_', ' ').capitalize()}"
+        return f"{size_in_square_meters:.2f} Square meters"
+
+    @staticmethod
+    def area_of_rectangle(length: float, width: float, unit: str = "square_meters") -> float:
+        """
+        Calculate the area of a rectangle.
+        
+        :param length: Length of the rectangle.
+        :param width: Width of the rectangle.
+        :param unit: Desired output unit (default is 'square_meters').
+        :return: Area of the rectangle in the specified unit.
+        """
+        area_in_square_meters = length * width
+        return AreaConverter.convert_area(area_in_square_meters, 'square_meters', unit)
+
+    @staticmethod
+    def area_of_circle(radius: float, unit: str = "square_meters") -> float:
+        """
+        Calculate the area of a circle.
+        
+        :param radius: Radius of the circle.
+        :param unit: Desired output unit (default is 'square_meters').
+        :return: Area of the circle in the specified unit.
+        """
+        area_in_square_meters = 3.14159 * (radius ** 2)
+        return AreaConverter.convert_area(area_in_square_meters, 'square_meters', unit)
+
+    @staticmethod
+    def area_of_triangle(base: float, height: float, unit: str = "square_meters") -> float:
+        """
+        Calculate the area of a triangle.
+        
+        :param base: Base length of the triangle.
+        :param height: Height of the triangle.
+        :param unit: Desired output unit (default is 'square_meters').
+        :return: Area of the triangle in the specified unit.
+        """
+        area_in_square_meters = 0.5 * base * height
+        return AreaConverter.convert_area(area_in_square_meters, 'square_meters', unit)
+
+class VolumeConverter:
+    # Conversion factors for volume units (liters as base unit)
+    units_in_liters = {
+        'liters': 1,
+        'milliliters': 1e-3,
+        'cubic_meters': 1e3,
+        'cubic_centimeters': 1e-3,
+        'cubic_inches': 0.0163871,
+        'cubic_feet': 28.3168,
+        'cubic_yards': 764.555,
+        'gallons': 3.78541,
+        'quarts': 0.946353,
+        'pints': 0.473176,
+        'fluid_ounces': 0.0295735
+    }
+
+    @staticmethod
+    def convert_volume(value: float, from_unit: str, to_unit: str) -> float:
+        """
+        Convert a volume value from one unit to another.
+        
+        :param value: Numeric volume value to convert.
+        :param from_unit: Unit of the input volume (e.g., "liters", "gallons").
+        :param to_unit: Target unit to convert to (e.g., "cubic meters").
+        :return: Converted volume value.
+        """
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in VolumeConverter.units_in_liters:
+            raise ValueError(f"Unsupported 'from' unit: {from_unit}")
+        if to_unit not in VolumeConverter.units_in_liters:
+            raise ValueError(f"Unsupported 'to' unit: {to_unit}")
+
+        # Convert the value to liters, then to the target unit
+        value_in_liters = value * VolumeConverter.units_in_liters[from_unit]
+        converted_value = value_in_liters / VolumeConverter.units_in_liters[to_unit]
+        
+        return converted_value
+
+    @staticmethod
+    def format_volume(size_in_liters: float) -> str:
+        """
+        Format a volume size into a readable string (e.g., '10.5 liters').
+        
+        :param size_in_liters: Volume size in liters.
+        :return: Readable formatted string.
+        """
+        for unit, factor in VolumeConverter.units_in_liters.items():
+            if size_in_liters < factor * 1000 or unit == 'cubic_meters':
+                formatted_size = size_in_liters / factor
+                return f"{formatted_size:.2f} {unit.replace('_', ' ').capitalize()}"
+        return f"{size_in_liters:.2f} Liters"
+
+    @staticmethod
+    def volume_of_cube(side: float, unit: str = "liters") -> float:
+        """
+        Calculate the volume of a cube.
+        
+        :param side: Length of a side of the cube.
+        :param unit: Desired output unit (default is 'liters').
+        :return: Volume of the cube in the specified unit.
+        """
+        volume_in_cubic_meters = side ** 3
+        return VolumeConverter.convert_volume(volume_in_cubic_meters, 'cubic_meters', unit)
+
+    @staticmethod
+    def volume_of_sphere(radius: float, unit: str = "liters") -> float:
+        """
+        Calculate the volume of a sphere.
+        
+        :param radius: Radius of the sphere.
+        :param unit: Desired output unit (default is 'liters').
+        :return: Volume of the sphere in the specified unit.
+        """
+        volume_in_cubic_meters = (4/3) * 3.14159 * (radius ** 3)
+        return VolumeConverter.convert_volume(volume_in_cubic_meters, 'cubic_meters', unit)
+
+    @staticmethod
+    def volume_of_cylinder(radius: float, height: float, unit: str = "liters") -> float:
+        """
+        Calculate the volume of a cylinder.
+        
+        :param radius: Radius of the base of the cylinder.
+        :param height: Height of the cylinder.
+        :param unit: Desired output unit (default is 'liters').
+        :return: Volume of the cylinder in the specified unit.
+        """
+        volume_in_cubic_meters = 3.14159 * (radius ** 2) * height
+        return VolumeConverter.convert_volume(volume_in_cubic_meters, 'cubic_meters', unit)
