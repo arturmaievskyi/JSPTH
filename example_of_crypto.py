@@ -1,4 +1,4 @@
-from JSPTH.Crypto import CryptoUtils
+from JSPTH.Crypto.Crypto import CryptoUtils
 import os
 
 
