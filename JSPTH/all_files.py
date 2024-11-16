@@ -12,6 +12,6 @@ def count_files_in_directory(directory):
     return total_files
 
 # Usage example:
-directory_path = '.'  # Replace with your directory path
+directory_path = 'JSPTH'  # Replace with your directory path
 file_count = count_files_in_directory(directory_path)
-print(f"\nTotal number of files: {file_count}")
+print(f"\nTotal number of files: {file_count}\n")
