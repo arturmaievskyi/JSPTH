@@ -1,3 +1,1 @@
-export class Algebra{
-    function 
-}
+console.log("Hi")
