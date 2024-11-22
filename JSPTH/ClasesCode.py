@@ -12,6 +12,8 @@ import sys
 from setproctitle import setproctitle
 from multiprocessing import Process, Pipe, Queue
 import psutil
+import platform
+import math
 
 class Console(ABC):
 
@@ -633,4 +635,463 @@ class VolumeConverter:
         """
         volume_in_cubic_meters = 3.14159 * (radius ** 2) * height
         return VolumeConverter.convert_volume(volume_in_cubic_meters, 'cubic_meters', unit)
+
+class OSUtilities:
+    @staticmethod
+    def get_os_type():
+        return os.name  # Returns 'posix', 'nt', etc.
+
+    @staticmethod
+    def get_platform():
+        return platform.system()  # Returns 'Windows', 'Linux', 'Darwin', etc.
+
+    @staticmethod
+    def get_platform_version():
+        return platform.version()  # Returns the OS version.
+
+    @staticmethod
+    def get_architecture():
+        return platform.architecture()[0]  # Returns '32bit' or '64bit'.
+
+    @staticmethod
+    def get_cpus():
+        return os.cpu_count()  # Returns the number of CPUs.
+
+    @staticmethod
+    def get_memory_info():
+        mem = psutil.virtual_memory()
+        return {
+            "total": mem.total,
+            "available": mem.available,
+            "used": mem.used,
+            "percent": mem.percent
+        }
+
+    @staticmethod
+    def get_disk_info():
+        disk = psutil.disk_usage('/')
+        return {
+            "total": disk.total,
+            "used": disk.used,
+            "free": disk.free,
+            "percent": disk.percent
+        }
+
+    @staticmethod
+    def get_boot_time():
+        boot_time = psutil.boot_time()
+        return platform.uname()._replace(boot_time=boot_time)
+
+    @staticmethod
+    def get_user_info():
+        return psutil.users()  # Returns a list of logged-in users.
+
+class SpeedConverter:
+    # Conversion factors for speed (meters per second as the base unit)
+    units_in_meters_per_second = {
+        'mps': 1,  # Meters per second
+        'kmph': 1 / 3.6,  # Kilometers per hour to meters per second
+        'mph': 0.44704,  # Miles per hour to meters per second
+        'fps': 0.3048,  # Feet per second to meters per second
+        'knots': 0.514444,  # Knots to meters per second
+    }
+
+    @staticmethod
+    def convert_speed(value: float, from_unit: str, to_unit: str) -> float:
+        """
+        Convert a speed value from one unit to another.
+        
+        :param value: Speed value to convert.
+        :param from_unit: The current unit of the speed value (e.g., 'kmph', 'mph').
+        :param to_unit: The target unit to convert to (e.g., 'mps', 'knots').
+        :return: The converted speed value.
+        """
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in SpeedConverter.units_in_meters_per_second:
+            raise ValueError(f"Unsupported 'from' unit: {from_unit}")
+        if to_unit not in SpeedConverter.units_in_meters_per_second:
+            raise ValueError(f"Unsupported 'to' unit: {to_unit}")
+
+        # Convert the value to meters per second
+        value_in_mps = value * SpeedConverter.units_in_meters_per_second[from_unit]
+        # Convert from meters per second to the target unit
+        converted_value = value_in_mps / SpeedConverter.units_in_meters_per_second[to_unit]
+        
+        return converted_value
+
+    @staticmethod
+    def format_speed(value: float, unit: str) -> str:
+        """
+        Format a speed value into a readable string.
+        
+        :param value: Speed value to format.
+        :param unit: Unit of the speed value (e.g., 'kmph', 'mph').
+        :return: Formatted speed string.
+        """
+        return f"{value:.2f} {unit.upper()}"
+    
+class MassConverter:
+    # Conversion factors (kilograms as the base unit)
+    units_in_kilograms = {
+        'kg': 1,             # Kilogram
+        'g': 1e-3,           # Gram
+        'mg': 1e-6,          # Milligram
+        'ton': 1e3,          # Metric ton
+        'lb': 0.453592,      # Pound
+        'oz': 0.0283495,     # Ounce
+        'stone': 6.35029,    # Stone
+        'us_ton': 907.184,   # US ton
+        'imperial_ton': 1016.05,  # Imperial ton
+    }
+
+    @staticmethod
+    def convert_mass(value: float, from_unit: str, to_unit: str) -> float:
+        """
+        Convert a mass value from one unit to another.
+
+        :param value: Mass value to convert.
+        :param from_unit: The current unit of the mass value (e.g., 'kg', 'lb').
+        :param to_unit: The target unit to convert to (e.g., 'g', 'oz').
+        :return: The converted mass value.
+        """
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        # Check if units are valid
+        if from_unit not in MassConverter.units_in_kilograms:
+            raise ValueError(f"Unsupported 'from' unit: {from_unit}")
+        if to_unit not in MassConverter.units_in_kilograms:
+            raise ValueError(f"Unsupported 'to' unit: {to_unit}")
+
+        # Convert the value to kilograms
+        value_in_kg = value * MassConverter.units_in_kilograms[from_unit]
+        # Convert from kilograms to the target unit
+        converted_value = value_in_kg / MassConverter.units_in_kilograms[to_unit]
+
+        return converted_value
+
+    @staticmethod
+    def format_mass(value: float, unit: str) -> str:
+        """
+        Format a mass value into a readable string.
+
+        :param value: Mass value to format.
+        :param unit: Unit of the mass value (e.g., 'kg', 'lb').
+        :return: Formatted mass string.
+        """
+        return f"{value:.2f} {unit.upper()}"
+
+class DistanceConverter:
+    units_in_meters = {
+        'm': 1,
+        'km': 1000,
+        'cm': 0.01,
+        'mm': 0.001,
+        'mi': 1609.34,
+        'yd': 0.9144,
+        'ft': 0.3048,
+        'in': 0.0254,
+        'nm': 1e-9
+    }
+
+    @staticmethod
+    def convert_distance(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+        if from_unit not in DistanceConverter.units_in_meters or to_unit not in DistanceConverter.units_in_meters:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+        value_in_meters = value * DistanceConverter.units_in_meters[from_unit]
+        return value_in_meters / DistanceConverter.units_in_meters[to_unit]
+
+class TemperatureConverter:
+    @staticmethod
+    def convert_temperature(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit == to_unit:
+            return value
+
+        if from_unit == 'celsius':
+            if to_unit == 'fahrenheit':
+                return value * 9 / 5 + 32
+            elif to_unit == 'kelvin':
+                return value + 273.15
+
+        elif from_unit == 'fahrenheit':
+            if to_unit == 'celsius':
+                return (value - 32) * 5 / 9
+            elif to_unit == 'kelvin':
+                return (value - 32) * 5 / 9 + 273.15
+
+        elif from_unit == 'kelvin':
+            if to_unit == 'celsius':
+                return value - 273.15
+            elif to_unit == 'fahrenheit':
+                return (value - 273.15) * 9 / 5 + 32
+
+        raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+class PressureConverter:
+    units_in_pascals = {
+        'pa': 1,            # Pascal
+        'kpa': 1000,        # Kilopascal
+        'mpa': 1e6,         # Megapascal
+        'atm': 101325,      # Atmosphere
+        'bar': 100000,      # Bar
+        'psi': 6894.76,     # Pounds per square inch
+        'torr': 133.322     # Torr
+    }
+
+    @staticmethod
+    def convert_pressure(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in PressureConverter.units_in_pascals or to_unit not in PressureConverter.units_in_pascals:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_pascals = value * PressureConverter.units_in_pascals[from_unit]
+        return value_in_pascals / PressureConverter.units_in_pascals[to_unit]
+
+class EnergyConverter:
+    units_in_joules = {
+        'j': 1,            # Joule
+        'kj': 1000,        # Kilojoule
+        'cal': 4.184,      # Calorie
+        'kcal': 4184,      # Kilocalorie
+        'wh': 3600,        # Watt-hour
+        'kwh': 3.6e6,      # Kilowatt-hour
+        'btu': 1055.06     # British Thermal Unit
+    }
+
+    @staticmethod
+    def convert_energy(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in EnergyConverter.units_in_joules or to_unit not in EnergyConverter.units_in_joules:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_joules = value * EnergyConverter.units_in_joules[from_unit]
+        return value_in_joules / EnergyConverter.units_in_joules[to_unit]
+
+class FrequencyConverter:
+    units_in_hertz = {
+        'hz': 1,           # Hertz
+        'khz': 1e3,        # Kilohertz
+        'mhz': 1e6,        # Megahertz
+        'ghz': 1e9         # Gigahertz
+    }
+
+    @staticmethod
+    def convert_frequency(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in FrequencyConverter.units_in_hertz or to_unit not in FrequencyConverter.units_in_hertz:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_hz = value * FrequencyConverter.units_in_hertz[from_unit]
+        return value_in_hz / FrequencyConverter.units_in_hertz[to_unit]
+
+class PowerConverter:
+    units_in_watts = {
+        'w': 1,            # Watt
+        'kw': 1000,        # Kilowatt
+        'mw': 1e6,         # Megawatt
+        'hp': 745.7        # Horsepower
+    }
+
+    @staticmethod
+    def convert_power(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in PowerConverter.units_in_watts or to_unit not in PowerConverter.units_in_watts:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_watts = value * PowerConverter.units_in_watts[from_unit]
+        return value_in_watts / PowerConverter.units_in_watts[to_unit]
+
+class ForceConverter:
+    units_in_newtons = {
+        'n': 1,               # Newton
+        'dyne': 1e-5,         # Dyne
+        'lbf': 4.44822,       # Pound-force
+        'kgf': 9.80665,       # Kilogram-force
+    }
+
+    @staticmethod
+    def convert_force(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in ForceConverter.units_in_newtons or to_unit not in ForceConverter.units_in_newtons:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_newtons = value * ForceConverter.units_in_newtons[from_unit]
+        return value_in_newtons / ForceConverter.units_in_newtons[to_unit]
+
+class TorqueConverter:
+    units_in_newton_meter = {
+        'nm': 1,               # Newton-meter
+        'lbft': 1.35582,       # Pound-foot
+        'kgfm': 9.80665,       # Kilogram-force meter
+    }
+
+    @staticmethod
+    def convert_torque(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in TorqueConverter.units_in_newton_meter or to_unit not in TorqueConverter.units_in_newton_meter:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_nm = value * TorqueConverter.units_in_newton_meter[from_unit]
+        return value_in_nm / TorqueConverter.units_in_newton_meter[to_unit]
+
+class DensityConverter:
+    units_in_kg_per_cubic_meter = {
+        'kgm3': 1,                 # Kilogram per cubic meter
+        'gcm3': 1000,              # Gram per cubic centimeter
+        'lbft3': 16.0185,          # Pound per cubic foot
+        'lbgal': 119.826,          # Pound per gallon (US)
+    }
+
+    @staticmethod
+    def convert_density(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in DensityConverter.units_in_kg_per_cubic_meter or to_unit not in DensityConverter.units_in_kg_per_cubic_meter:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_kgm3 = value * DensityConverter.units_in_kg_per_cubic_meter[from_unit]
+        return value_in_kgm3 / DensityConverter.units_in_kg_per_cubic_meter[to_unit]
+
+class LuminanceConverter:
+    units_in_lux = {
+        'lux': 1,               # Lux
+        'candela': 1 / (4 * math.pi),  # Candela to lux (approx. for point source at 1m)
+        'lumen': 1 / (4 * math.pi),    # Lumen to lux (approx. for point source at 1m)
+    }
+
+    @staticmethod
+    def convert_luminance(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in LuminanceConverter.units_in_lux or to_unit not in LuminanceConverter.units_in_lux:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_lux = value * LuminanceConverter.units_in_lux[from_unit]
+        return value_in_lux / LuminanceConverter.units_in_lux[to_unit]
+
+class FuelEfficiencyConverter:
+    @staticmethod
+    def convert_fuel_efficiency(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit == to_unit:
+            return value
+
+        if from_unit == "mpg":  # Miles per gallon (US)
+            if to_unit == "kmpl":  # Kilometers per liter
+                return value * 0.425144
+            elif to_unit == "l/100km":  # Liters per 100 kilometers
+                return 235.215 / value
+
+        elif from_unit == "kmpl":  # Kilometers per liter
+            if to_unit == "mpg":
+                return value * 2.35215
+            elif to_unit == "l/100km":
+                return 100 / value
+
+        elif from_unit == "l/100km":  # Liters per 100 kilometers
+            if to_unit == "mpg":
+                return 235.215 / value
+            elif to_unit == "kmpl":
+                return 100 / value
+
+        raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+class RadioactivityConverter:
+    units_in_becquerel = {
+        'bq': 1,            # Becquerel
+        'ci': 3.7e10,       # Curie
+        'rd': 1e6,          # Rutherford
+    }
+
+    @staticmethod
+    def convert_radioactivity(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in RadioactivityConverter.units_in_becquerel or to_unit not in RadioactivityConverter.units_in_becquerel:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_bq = value * RadioactivityConverter.units_in_becquerel[from_unit]
+        return value_in_bq / RadioactivityConverter.units_in_becquerel[to_unit]
+
+class DataTransferRateConverter:
+    units_in_bps = {
+        'bps': 1,            # Bits per second
+        'kbps': 1e3,         # Kilobits per second
+        'mbps': 1e6,         # Megabits per second
+        'gbps': 1e9,         # Gigabits per second
+        'tbps': 1e12,        # Terabits per second
+    }
+
+    @staticmethod
+    def convert_transfer_rate(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in DataTransferRateConverter.units_in_bps or to_unit not in DataTransferRateConverter.units_in_bps:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_bps = value * DataTransferRateConverter.units_in_bps[from_unit]
+        return value_in_bps / DataTransferRateConverter.units_in_bps[to_unit]
+
+class CapacitanceConverter:
+    units_in_farads = {
+        'f': 1,             # Farad
+        'uf': 1e-6,         # Microfarad
+        'nf': 1e-9,         # Nanofarad
+        'pf': 1e-12,        # Picofarad
+    }
+
+    @staticmethod
+    def convert_capacitance(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in CapacitanceConverter.units_in_farads or to_unit not in CapacitanceConverter.units_in_farads:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_farads = value * CapacitanceConverter.units_in_farads[from_unit]
+        return value_in_farads / CapacitanceConverter.units_in_farads[to_unit]
+
+class IlluminationIntensityConverter:
+    units_in_lux = {
+        'lux': 1,               # Lux
+        'lumen': 1 / (4 * math.pi),  # Lumen
+        'footcandle': 10.7639,      # Foot-candle
+    }
+
+    @staticmethod
+    def convert_illumination(value, from_unit, to_unit):
+        from_unit = from_unit.lower()
+        to_unit = to_unit.lower()
+
+        if from_unit not in IlluminationIntensityConverter.units_in_lux or to_unit not in IlluminationIntensityConverter.units_in_lux:
+            raise ValueError(f"Unsupported unit: {from_unit} or {to_unit}")
+
+        value_in_lux = value * IlluminationIntensityConverter.units_in_lux[from_unit]
+        return value_in_lux / IlluminationIntensityConverter.units_in_lux[to_unit]
 
