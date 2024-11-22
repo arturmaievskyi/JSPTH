@@ -1,5 +1,9 @@
 import {Calculator} from "./JSPTH/MathJS/MainMath";
 
 
-new calc = Calculator()
 
+var a = 5;
+var b = 10;
+var c = Calculator.add(a, b)
+
+console.log(c)
