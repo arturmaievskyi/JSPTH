@@ -677,10 +677,10 @@ class OSUtilities:
             "percent": disk.percent
         }
 
-    @staticmethod
-    def get_boot_time():
-        boot_time = psutil.boot_time()
-        return platform.uname()._replace(boot_time=boot_time)
+    # @staticmethod
+    # def get_boot_time():
+    #     boot_time = psutil.boot_time()
+    #     return platform.uname()._replace(boot_time = boot_time)
 
     @staticmethod
     def get_user_info():
