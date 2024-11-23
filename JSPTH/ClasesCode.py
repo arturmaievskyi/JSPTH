@@ -4,7 +4,6 @@ from pathlib import Path
 import os
 import threading
 import time
-import subprocess
 import shutil
 import subprocess
 import signal
@@ -51,12 +50,7 @@ class Console(ABC):
         text_input = float(input(text))
         return text_input
   
-class FunctionsAndFiles(ABC):
-    # @abstractmethod
-    # async def async_task(name: str, delay: int, text: float):
-    #     print(f"{float}{name}")
-    #     await asyncio.sleep(delay)
-    #     print(f"Task {name} finished after {delay} seconds")
+class Files(ABC):
 
     async def read_file(file_path: str) -> str:
         """Reads the contents of a file."""

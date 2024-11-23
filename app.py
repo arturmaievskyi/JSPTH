@@ -6,7 +6,6 @@ from JSPTH.Math.Time import Time
 from JSPTH.Math.Geometry import GeometryMath as Geometry
 
 
-
 MyMath.factorial(9)
 test = Console.IntGet("Your num:")
 Console.log(test)

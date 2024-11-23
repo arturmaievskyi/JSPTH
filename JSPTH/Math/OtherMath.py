@@ -10,6 +10,7 @@ class AngleConverter:
     @staticmethod
     def convert_angle(value, from_unit, to_unit):
         from_unit = from_unit.lower()
+
         to_unit = to_unit.lower()
 
         if from_unit not in AngleConverter.units_in_radians or to_unit not in AngleConverter.units_in_radians:

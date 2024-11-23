@@ -2,7 +2,7 @@ name: JSPTH
 
 on:
   release:
-    types: [published]
+    types: [unpublished]
 
 jobs:
   publish-to-pypi:
