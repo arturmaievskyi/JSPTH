@@ -9,7 +9,7 @@ import subprocess
 import signal
 import sys
 from setproctitle import setproctitle
-from multiprocessing import Process, Pipe, Queue
+from multiprocessing import Process, Pipe
 import psutil
 import platform
 import math
