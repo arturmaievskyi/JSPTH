@@ -1,5 +1,6 @@
 import{
     "fmt"
+    "JSPTH/MathGO/MainMath"
 }
 
 
