@@ -2,9 +2,6 @@ import math
 from . import MainMath as MM
 
 class GeometryMath():
-
-
-
     def area_of_circle(radius: float) -> float:
         """
         Calculate the area of a circle.

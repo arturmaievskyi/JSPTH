@@ -15,8 +15,6 @@ import platform
 import math
 
 class Console(ABC):
-
-
     def log(arguments):
         '''
         its like print()
