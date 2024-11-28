@@ -161,4 +161,75 @@ namespace MathUtilities
             return (radius, angleRadians * RadToDeg);
         }
     }
+    public static class GeometryOperations
+    {
+        private const double Pi = Math.PI;
+
+        // Circle properties
+        public static double CircleArea(double radius)
+        {
+            if (radius < 0) throw new ArgumentException("Radius cannot be negative.");
+            return Pi * radius * radius;
+        }
+
+        public static double CircleCircumference(double radius)
+        {
+            if (radius < 0) throw new ArgumentException("Radius cannot be negative.");
+            return 2 * Pi * radius;
+        }
+
+        // Cone properties
+        public static double VolumeOfCone(double radius, double height)
+        {
+            if (radius < 0 || height < 0) throw new ArgumentException("Radius and height must be non-negative.");
+            return (1.0 / 3) * Pi * radius * radius * height;
+        }
+
+        public static double SurfaceAreaOfCone(double radius, double slantHeight)
+        {
+            if (radius < 0 || slantHeight < 0) throw new ArgumentException("Radius and slant height must be non-negative.");
+            return Pi * radius * (radius + slantHeight);
+        }
+
+        // Distance between two points
+        public static double DistanceBetweenPoints(double x1, double y1, double x2, double y2)
+        {
+            double deltaX = x2 - x1;
+            double deltaY = y2 - y1;
+            return Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+        }
+
+        // Triangle area using Heron's formula
+        public static double TriangleAreaHeron(double a, double b, double c)
+        {
+            if (a <= 0 || b <= 0 || c <= 0) throw new ArgumentException("Sides must be positive.");
+            double s = (a + b + c) / 2; // Semi-perimeter
+            return Math.Sqrt(s * (s - a) * (s - b) * (s - c));
+        }
+
+        // Parallelogram area
+        public static double ParallelogramArea(double baseLength, double height)
+        {
+            if (baseLength < 0 || height < 0) throw new ArgumentException("Base length and height must be non-negative.");
+            return baseLength * height;
+        }
+
+        // Sphere properties
+        public static double SphereSurfaceArea(double radius)
+        {
+            if (radius < 0) throw new ArgumentException("Radius cannot be negative.");
+            return 4 * Pi * radius * radius;
+        }
+
+        public static double SphereVolume(double radius)
+        {
+            if (radius < 0) throw new ArgumentException("Radius cannot be negative.");
+            return (4.0 / 3) * Pi * radius * radius * radius;
+        }
+
+        // Circle area and circumference (aliases for consistency)
+        public static double AreaOfCircle(double radius) => CircleArea(radius);
+
+        public static double CircumferenceOfCircle(double radius) => CircleCircumference(radius);
+    }
 }
