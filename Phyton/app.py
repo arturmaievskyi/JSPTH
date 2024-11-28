@@ -1,7 +1,5 @@
 from JSPTH.ClasesCode import *
 from JSPTH.Math.MainMath import MyMath
-from JSPTH.Math.Trigonometry import Trigonometry
-from JSPTH.Math.Algebra import Algebra
 from JSPTH.Math.Time import Time
 from JSPTH.Math.Geometry import GeometryMath as Geometry
 

@@ -1,9 +1,9 @@
-from .ClasesCode import*
-from .Crypto import*
-from .Math import*
-from .BeckEnd import*
-from .DataAnalytics import *
-from .Turtle import*
+from JSPTH.ClasesCode import*
+from JSPTH.Crypto import*
+from JSPTH.Math import*
+from JSPTH.BeckEnd import*
+from JSPTH.DataAnalytics import *
+from JSPTH.Turtle import*
 
 __all__ = [
     'ClasesCode',
