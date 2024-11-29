@@ -6,8 +6,8 @@ class Main
 {
     public static void main(string[] args)
     {
-        int num = 0;
-        Console.WriteLine(num)
+        int a = MathOperations.add(2, 2)
+        Console.WriteLine(a)
 
     }
 }
