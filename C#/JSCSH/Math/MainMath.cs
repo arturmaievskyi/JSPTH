@@ -232,4 +232,101 @@ namespace MathUtilities
 
         public static double CircumferenceOfCircle(double radius) => CircleCircumference(radius);
     }
+
+    public static class AlgebraOperations
+    {
+        // Solves a quadratic equation ax^2 + bx + c = 0
+        public static (double? Root1, double? Root2) QuadraticSolver(double a, double b, double c)
+        {
+            if (a == 0) throw new ArgumentException("Coefficient 'a' cannot be zero for a quadratic equation.");
+            double discriminant = b * b - 4 * a * c;
+            if (discriminant < 0) return (null, null); // No real roots
+            double root1 = (-b + Math.Sqrt(discriminant)) / (2 * a);
+            double root2 = (-b - Math.Sqrt(discriminant)) / (2 * a);
+            return (root1, root2);
+        }
+
+        // Solves a linear equation ax + b = 0
+        public static double LinearSolver(double a, double b)
+        {
+            if (a == 0) throw new ArgumentException("Coefficient 'a' cannot be zero for a linear equation.");
+            return -b / a;
+        }
+
+        // Solves exponential equations of the form a^x = b
+        public static double ExponentialSolver(double a, double b)
+        {
+            if (a <= 0 || b <= 0) throw new ArgumentException("Base and result must be positive.");
+            return Math.Log(b) / Math.Log(a);
+        }
+
+        // Solves logarithmic equations of the form log_a(x) = b
+        public static double LogarithmSolver(double a, double b)
+        {
+            if (a <= 0 || a == 1 || b <= 0) throw new ArgumentException("Base must be > 0 and ≠ 1; result must be positive.");
+            return Math.Pow(a, b);
+        }
+
+        // Evaluates a polynomial at a given value of x
+        public static double PolynomialEval(double[] coefficients, double x)
+        {
+            double result = 0;
+            for (int i = 0; i < coefficients.Length; i++)
+            {
+                result += coefficients[i] * Math.Pow(x, i);
+            }
+            return result;
+        }
+
+        // Computes the greatest common divisor (GCD) of two integers
+        public static int GCD(int a, int b)
+        {
+            while (b != 0)
+            {
+                int temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return Math.Abs(a);
+        }
+
+        // Computes the least common multiple (LCM) of two integers
+        public static int LCM(int a, int b)
+        {
+            if (a == 0 || b == 0) return 0;
+            return Math.Abs(a * b) / GCD(a, b);
+        }
+
+        // Computes the binomial coefficient C(n, k) = n! / (k! * (n - k)!)
+        public static long BinomialCoefficient(int n, int k)
+        {
+            if (n < 0 || k < 0 || k > n) throw new ArgumentException("Invalid values for n and k.");
+            if (k == 0 || k == n) return 1;
+            long result = 1;
+            for (int i = 1; i <= k; i++)
+            {
+                result = result * (n - i + 1) / i;
+            }
+            return result;
+        }
+
+        // Computes the nth term of an arithmetic progression
+        public static double ArithmeticProgression(double firstTerm, double commonDifference, int n)
+        {
+            return firstTerm + (n - 1) * commonDifference;
+        }
+
+        // Computes the nth term of a geometric progression
+        public static double GeometricProgression(double firstTerm, double commonRatio, int n)
+        {
+            return firstTerm * Math.Pow(commonRatio, n - 1);
+        }
+
+        // Computes the sum of the first n terms of a geometric series
+        public static double GeometricSeriesSum(double firstTerm, double commonRatio, int n)
+        {
+            if (commonRatio == 1) return firstTerm * n;
+            return firstTerm * (1 - Math.Pow(commonRatio, n)) / (1 - commonRatio);
+        }
+    }
 }
