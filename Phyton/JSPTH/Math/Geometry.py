@@ -16,7 +16,6 @@ class GeometryMath():
             raise ValueError("Radius cannot be negative")
         return(math.pi * radius**2)
 
-
     def circumference_of_circle(radius: float) -> float:
         """
         Calculate the circumference of a circle.
@@ -75,8 +74,6 @@ class GeometryMath():
         """
         return(math.sqrt((x2 - x1)**2 + (y2 - y1)**2))
 
-
-
     def triangle_area_heron(a: float, b: float, c: float) -> float:
         """
         Calculate the area of a triangle using Heron's formula.
@@ -101,8 +98,6 @@ class GeometryMath():
         # Area calculation
         return math.sqrt(s * (s - a) * (s - b) * (s - c))
     
-
-
     def circle_circumference(radius: float) -> float:
         """
         Calculate the circumference of a circle.
@@ -115,7 +110,6 @@ class GeometryMath():
         """
         return 2 * math.pi * radius
 
-
     def circle_area(radius: float) -> float:
         """
         Calculate the area of a circle.
@@ -127,7 +121,6 @@ class GeometryMath():
         float: The area of the circle.
         """
         return math.pi * radius ** 2
-
 
     def parallelogram_area(base: float, height: float) -> float:
         """
@@ -142,7 +135,6 @@ class GeometryMath():
         """
         return base * height
 
-
     def sphere_surface_area(radius: float) -> float:
         """
         Calculate the surface area of a sphere.
@@ -154,7 +146,6 @@ class GeometryMath():
         float: The surface area of the sphere.
         """
         return 4 * math.pi * radius ** 2
-
 
     def sphere_volume(radius: float) -> float:
         """

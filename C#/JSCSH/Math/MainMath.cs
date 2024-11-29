@@ -65,7 +65,6 @@ namespace MathUtilities
             return result;
         }
     }
-
     public static class Trigonometry
     {
         private const double DegToRad = Math.PI / 180.0; // Conversion factor from degrees to radians
@@ -232,7 +231,6 @@ namespace MathUtilities
 
         public static double CircumferenceOfCircle(double radius) => CircleCircumference(radius);
     }
-
     public static class AlgebraOperations
     {
         // Solves a quadratic equation ax^2 + bx + c = 0

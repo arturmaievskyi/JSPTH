@@ -26,8 +26,6 @@ class Algebra():
         
         return sol1, sol2
 
-
-
     def linear_solver(a: float, b: float) -> float:
         """
         Solves the linear equation ax + b = 0.
@@ -46,7 +44,6 @@ class Algebra():
             raise ValueError("The equation is invalid (a cannot be zero).")
         
         return -b / a
-
 
     def exponential_solver(a: float, b: float) -> float:
         """
@@ -67,8 +64,6 @@ class Algebra():
         
         return math.log(b) / math.log(a)
 
-
-
     def logarithm_solver(a: float, b: float) -> float:
         """
         Solves the logarithmic equation log_a(b).
@@ -88,8 +83,6 @@ class Algebra():
         
         return math.log(b) / math.log(a)
 
-
-
     def polynomial_eval(coeffs: list, x: float) -> float:
         """
         Evaluates a polynomial at a given x-value.
@@ -107,7 +100,6 @@ class Algebra():
             result += coeff * (x ** (degree - i))
         
         return result
-
 
     def gcd(a: int, b: int) -> int:
         """
@@ -127,8 +119,6 @@ class Algebra():
     def lcm(a:int, b:int) -> int:
         """Returns the least common multiple (LCM) of two numbers."""
         return abs(a * b) // math.gcd(a, b)
-
-
 
     def binomial_coefficient(n: int, k: int) -> int:
         """
@@ -150,7 +140,6 @@ class Algebra():
         # Factorial method to calculate binomial coefficient
         return math.factorial(n) // (math.factorial(k) * math.factorial(n - k))
 
-
     def arithmetic_progression(a1: float, d: float, n: int) -> float:
         """
         Finds the n-th term of an arithmetic progression.
@@ -165,7 +154,6 @@ class Algebra():
         """
         return a1 + (n - 1) * d
 
-
     def geometric_progression(a1: float, r: float, n: int) -> float:
         """
         Finds the n-th term of a geometric progression.
@@ -179,8 +167,6 @@ class Algebra():
         float: The n-th term.
         """
         return a1 * (r ** (n - 1))
-
-
 
     def geometric_series_sum(a1: float, r: float, n: int) -> float:
         """

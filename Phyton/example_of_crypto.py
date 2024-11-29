@@ -33,7 +33,7 @@ print("Decrypted RSA:", rsa_decrypted)
 # 5. RSA Digital Signatures
 signature = signatureC.sign_data(private_key, 'Message to sign')
 print("Signature:", signature)
-print("Signature valid:", signatureC.verify_signature(public_key, signature, 'Message to sign'))
+print("Signature valid:", signatureCw.verify_signature(public_key, signature, 'Message to sign'))
 
 # 6. Key Derivation
 salt = os.urandom(16)

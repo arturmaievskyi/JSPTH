@@ -14,10 +14,7 @@ class Trigonometry():
         """
         sine_answ =  math.sin(math.radians(angle_in_degrees))
         return sine_answ
-    
 
-
-    
     def cosine(angle_in_degrees: float) -> float:
         """
         Calculate the cosine of an angle (in degrees).
@@ -30,9 +27,6 @@ class Trigonometry():
         """
         cosine_answ =  math.cos(math.radians(angle_in_degrees))
         return cosine_answ
-    
-
-
 
     def tangent(angle_in_degrees: float) -> float:
         """
@@ -46,8 +40,6 @@ class Trigonometry():
         """
         tan_answ =  math.tan(math.radians(angle_in_degrees))
         return tan_answ
-    
-
 
     def arcsine(value: float) -> float:
         """
@@ -235,8 +227,6 @@ class Trigonometry():
             raise ValueError("Tangent of the sum is undefined for this angle.")
         return (math.tan(angle_a_radians) + math.tan(angle_b_radians)) / denominator
 
-
-
     def sine_double(angle_in_degrees: float) -> float:
         """
         Calculate the sine of a double angle (in degrees).
@@ -249,7 +239,6 @@ class Trigonometry():
         """
         angle_in_radians = math.radians(angle_in_degrees)
         return 2 * math.sin(angle_in_radians) * math.cos(angle_in_radians)
-
 
     def cosine_double(angle_in_degrees: float) -> float:
         """
@@ -283,7 +272,6 @@ class Trigonometry():
             raise ValueError("Tangent of the double angle is undefined for this angle.")
         return (2 * math.tan(angle_in_radians)) / denominator
 
-
     def polar_to_cartesian(r: float, theta_in_degrees: float) -> tuple:
         """
         Convert polar coordinates to Cartesian coordinates.
@@ -299,8 +287,6 @@ class Trigonometry():
         x = r * math.cos(theta_in_radians)
         y = r * math.sin(theta_in_radians)
         return (x, y)
-
-
 
     def cartesian_to_polar(x: float, y: float) -> tuple:
         """

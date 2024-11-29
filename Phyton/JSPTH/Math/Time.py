@@ -121,4 +121,3 @@ class Time:
         current_month = datetime(year, month, 1)
         
         return (next_month - current_month).days
-

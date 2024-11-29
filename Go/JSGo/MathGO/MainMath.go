@@ -1,10 +1,8 @@
 // File: math.go
-package main
+package mathmain
 
 import (
 	"errors"
-	"fmt"
-	"log"
 	"math"
 )
 

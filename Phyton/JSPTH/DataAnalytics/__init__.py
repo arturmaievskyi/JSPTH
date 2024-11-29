@@ -1,5 +1,7 @@
-from .main import *
+from .main import DataVisualization, DatabaseConnection, DatabaseDataHandler
 
 __all__ = [
-    'main'
+    'DataVisualization',
+    'DatabaseDataHandler',
+    'DatabaseConnection'
 ]
