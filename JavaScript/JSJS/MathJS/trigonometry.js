@@ -1,88 +1,95 @@
 class Trigonometry {
-    sine(x) {
-        return Math.sin(x);
+    constructor() {
+      this.radiansToDegrees = (rad) => rad * (180 / Math.PI);
+      this.degreesToRadians = (deg) => deg * (Math.PI / 180);
     }
-
-    cosine(x) {
-        return Math.cos(x);
+  
+    // Basic Trigonometric Functions
+    sine(angle) {
+      return Math.sin(angle);
     }
-
-    tangent(x) {
-        return Math.tan(x);
+  
+    cosine(angle) {
+      return Math.cos(angle);
     }
-
-    secant(x) {
-        if (Math.cos(x) === 0) throw new Error("Secant undefined at this angle");
-        return 1 / Math.cos(x);
+  
+    tangent(angle) {
+      return Math.tan(angle);
     }
-
-    cosecant(x) {
-        if (Math.sin(x) === 0) throw new Error("Cosecant undefined at this angle");
-        return 1 / Math.sin(x);
+  
+    arcsine(value) {
+      return Math.asin(value);
     }
-
-    cotangent(x) {
-        if (Math.tan(x) === 0) throw new Error("Cotangent undefined at this angle");
-        return 1 / Math.tan(x);
+  
+    arccosine(value) {
+      return Math.acos(value);
     }
-    arcsine(x) {
-        return Math.asin(x);
+  
+    arctangent(value) {
+      return Math.atan(value);
     }
-
-    arccosine(x) {
-        return Math.acos(x);
+  
+    // Reciprocal Trigonometric Functions
+    secant(angle) {
+      return 1 / Math.cos(angle);
     }
-
-    arctangent(x) {
-        return Math.atan(x);
+  
+    cosecant(angle) {
+      return 1 / Math.sin(angle);
     }
-
-    law_of_cosines(a, b, angleC) {
-        return Math.sqrt(a * a + b * b - 2 * a * b * Math.cos(angleC));
+  
+    cotangent(angle) {
+      return 1 / Math.tan(angle);
     }
-
-    law_of_sines(a, angleA, angleB) {
-        return (a * Math.sin(angleB)) / Math.sin(angleA);
+  
+    // Law of Cosines
+    law_of_cosines(a, b, c) {
+      return Math.acos((a ** 2 + b ** 2 - c ** 2) / (2 * a * b));
     }
-
-    sine_sum(x, y) {
-        return Math.sin(x) * Math.cos(y) + Math.cos(x) * Math.sin(y);
+  
+    // Law of Sines
+    law_of_sines(opposite, hypotenuse, angle) {
+      return opposite / Math.sin(angle) === hypotenuse / Math.sin(Math.PI - angle);
     }
-
-    cosine_sum(x, y) {
-        return Math.cos(x) * Math.cos(y) - Math.sin(x) * Math.sin(y);
+  
+    // Sum and Double-Angle Identities
+    sine_sum(a, b) {
+      return this.sine(a) * this.cosine(b) + this.cosine(a) * this.sine(b);
     }
-
-    tangent_sum(x, y) {
-        if (Math.cos(x) * Math.cos(y) === 0) throw new Error("Tangent sum undefined for these angles");
-        return (Math.tan(x) + Math.tan(y)) / (1 - Math.tan(x) * Math.tan(y));
+  
+    cosine_sum(a, b) {
+      return this.cosine(a) * this.cosine(b) - this.sine(a) * this.sine(b);
     }
-
-
-    sine_double(x) {
-        return 2 * Math.sin(x) * Math.cos(x);
+  
+    tangent_sum(a, b) {
+      return (this.tangent(a) + this.tangent(b)) / (1 - this.tangent(a) * this.tangent(b));
     }
-
-    cosine_double(x) {
-        return Math.cos(x) * Math.cos(x) - Math.sin(x) * Math.sin(x);
+  
+    sine_double(a) {
+      return 2 * this.sine(a) * this.cosine(a);
     }
-
-    tangent_double(x) {
-        if (Math.cos(x) * Math.cos(x) === 0) throw new Error("Tangent double undefined for this angle");
-        return (2 * Math.tan(x)) / (1 - Math.tan(x) * Math.tan(x));
+  
+    cosine_double(a) {
+      return this.cosine(a) ** 2 - this.sine(a) ** 2;
     }
-
-    polar_to_cartesian(radius, angle) {
-        return {
-            x: radius * Math.cos(angle),
-            y: radius * Math.sin(angle),
-        };
+  
+    tangent_double(a) {
+      return (2 * this.tangent(a)) / (1 - this.tangent(a) ** 2);
     }
-
+  
+    // Coordinate Conversions
+    polar_to_cartesian(r, theta) {
+      return {
+        x: r * this.cosine(theta),
+        y: r * this.sine(theta),
+      };
+    }
+  
     cartesian_to_polar(x, y) {
-        return {
-            radius: Math.sqrt(x * x + y * y),
-            angle: Math.atan2(y, x),
-        };
+      return {
+        r: Math.sqrt(x ** 2 + y ** 2),
+        theta: Math.atan2(y, x),
+      };
     }
-}
+  }
+  

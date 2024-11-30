@@ -176,3 +176,5 @@ class DatabaseDataHandler:
         else:
             print("Failed to execute custom query.")
             return pd.DataFrame()
+
+#3 classes

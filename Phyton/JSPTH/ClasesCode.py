@@ -1087,3 +1087,4 @@ class IlluminationIntensityConverter:
         value_in_lux = value * IlluminationIntensityConverter.units_in_lux[from_unit]
         return value_in_lux / IlluminationIntensityConverter.units_in_lux[to_unit]
 
+#28 classes

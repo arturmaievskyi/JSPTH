@@ -12,8 +12,4 @@ class Square():
             right(90)
             forward(num_two)
             right(90)
-    
-class  Trapezium():
-    pass
-
-
+#1 class

@@ -43,15 +43,7 @@ class SimpleServer:
             print(f"Static file '{filename}' not found.")
             return None
 
-    def run(self):
-        """Start the server."""
-        server_address = (self.host, self.port)
-        httpd = HTTPServer(server_address, self._make_handler())
-        print(f"Running on http://{self.host}:{self.port}")
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("Server stopped.")
+
 
     def _make_handler(self):
         """Creates a custom request handler class that can access the SimpleServer instance."""
@@ -85,3 +77,12 @@ class SimpleServer:
                 self.wfile.write(html_content.encode())
                 
         return RequestHandler
+    def run(self):
+        """Start the server."""
+        server_address = (self.host, self.port)
+        httpd = HTTPServer(server_address, self._make_handler())
+        print(f"Running on http://{self.host}:{self.port}")
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("Server stopped.")
