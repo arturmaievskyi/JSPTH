@@ -1,13 +1,10 @@
 using System;
-using MathUtilities;
-
+using JSCSH.MathUtilities;
 
 class Main
 {
-    public static void main(string[] args)
+    public static void main()
     {
-        int a = MathOperations.add(2, 2)
-        Console.WriteLine(a)
-
+        
     }
 }
