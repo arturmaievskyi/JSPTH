@@ -1,3 +1,5 @@
+package JSJ.Convertors;
+
 public class StorageConverter {
 
     private static final long BYTE = 1;

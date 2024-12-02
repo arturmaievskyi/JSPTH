@@ -1,3 +1,5 @@
+package JSJ.Convertors;
+
 public class SpeedConverter {
 
     private static final double MPS_TO_KPH = 3.6;

@@ -1,3 +1,5 @@
+package JSJ.Convertors;
+
 public class AreaConverter {
 
     private static final double SQM_TO_SQFT = 10.7639;

@@ -1,3 +1,5 @@
+package JSJ.Convertors;
+
 public class MassConverter {
 
     private static final double GRAMS_TO_KILOGRAMS = 0.001;
