@@ -1,5 +1,4 @@
 package JSJ;
-
 import java.util.Scanner;
 
 class Console {
