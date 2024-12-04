@@ -1,7 +1,7 @@
-from .main import DataVisualization, DatabaseConnection, DatabaseDataHandler
+from .main import PandasVisualizationApp, DatabaseConnection, DatabaseDataHandler
 
 __all__ = [
-    'DataVisualization',
+    'PandasVisualizationApp',
     'DatabaseDataHandler',
     'DatabaseConnection'
 ]

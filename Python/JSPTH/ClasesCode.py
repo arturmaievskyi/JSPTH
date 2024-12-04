@@ -831,13 +831,13 @@ class PressureConverter:
     units_in_pascals = {
         'pa': 1,            # Pascal
         'kpa': 1000,        # Kilopascal
-        'mpa': 1e6,         # Megapascal
+       'mpa': 1e6,         # Megapascal
         'atm': 101325,      # Atmosphere
         'bar': 100000,      # Bar
         'psi': 6894.76,     # Pounds per square inch
         'torr': 133.322     # Torr
     }
-
+ 
     @staticmethod
     def convert_pressure(value, from_unit, to_unit):
         from_unit = from_unit.lower()
