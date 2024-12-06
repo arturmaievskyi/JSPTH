@@ -195,3 +195,81 @@ func (Converters) FrequencyConverter(value float64, from, to string) (float64, e
 	}
 	return value * fromFactor / toFactor, nil
 }
+func (Converters) PowerConverter(value float64, from, to string) (float64, error) {
+	units := map[string]float64{
+		"watts":          1,
+		"kilowatts":      1000,
+		"horsepower":     745.7,
+		"btus_per_hour":  0.293071,
+	}
+	fromFactor, ok1 := units[from]
+	toFactor, ok2 := units[to]
+	if !ok1 || !ok2 {
+		return 0, fmt.Errorf("invalid units: %s or %s", from, to)
+	}
+	return value * fromFactor / toFactor, nil
+}
+
+// ForceConverter converts between different force units.
+func (Converters) ForceConverter(value float64, from, to string) (float64, error) {
+	units := map[string]float64{
+		"newton":        1,
+		"kilonewton":    1000,
+		"pound_force":   4.44822,
+		"dyne":          0.00001,
+	}
+	fromFactor, ok1 := units[from]
+	toFactor, ok2 := units[to]
+	if !ok1 || !ok2 {
+		return 0, fmt.Errorf("invalid units: %s or %s", from, to)
+	}
+	return value * fromFactor / toFactor, nil
+}
+
+// TorqueConverter converts between different torque units.
+func (Converters) TorqueConverter(value float64, from, to string) (float64, error) {
+	units := map[string]float64{
+		"newton_meter":       1,
+		"kilonewton_meter":   1000,
+		"foot_pound":         1.35582,
+		"inch_pound":         0.112985,
+	}
+	fromFactor, ok1 := units[from]
+	toFactor, ok2 := units[to]
+	if !ok1 || !ok2 {
+		return 0, fmt.Errorf("invalid units: %s or %s", from, to)
+	}
+	return value * fromFactor / toFactor, nil
+}
+
+// DensityConverter converts between different density units.
+func (Converters) DensityConverter(value float64, from, to string) (float64, error) {
+	units := map[string]float64{
+		"kilogram_per_cubic_meter": 1,
+		"gram_per_cubic_centimeter": 1000,
+		"pound_per_cubic_foot":     16.0185,
+		"ounce_per_cubic_inch":     1729.99,
+	}
+	fromFactor, ok1 := units[from]
+	toFactor, ok2 := units[to]
+	if !ok1 || !ok2 {
+		return 0, fmt.Errorf("invalid units: %s or %s", from, to)
+	}
+	return value * fromFactor / toFactor, nil
+}
+
+// LuminanceConverter converts between different luminance units.
+func (Converters) LuminanceConverter(value float64, from, to string) (float64, error) {
+	units := map[string]float64{
+		"candela_per_square_meter": 1,
+		"candela_per_square_foot":  10.764,
+		"nit":                      1,
+		"footlambert":              3.426259,
+	}
+	fromFactor, ok1 := units[from]
+	toFactor, ok2 := units[to]
+	if !ok1 || !ok2 {
+		return 0, fmt.Errorf("invalid units: %s or %s", from, to)
+	}
+	return value * fromFactor / toFactor, nil
+}
