@@ -100,8 +100,8 @@ namespace JSCSH
                 return value * (unitMap[fromUnit] / unitMap[toUnit]);
             },
                 public static double ConvertDistance(double value, string fromUnit, string toUnit)
-        {
-            var unitMap = new Dictionary<string, double>
+            {
+                var unitMap = new Dictionary<string, double>
             {
                 { "m", 1 },        // Meter
                 { "km", 1000 },    // Kilometer
@@ -113,30 +113,30 @@ namespace JSCSH
                 { "in", 0.0254 }   // Inch
             };
 
-            if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
-                throw new ArgumentException("Invalid distance units specified.");
+                if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                    throw new ArgumentException("Invalid distance units specified.");
 
-            return value * (unitMap[fromUnit] / unitMap[toUnit]);
-        }
+                return value * (unitMap[fromUnit] / unitMap[toUnit]);
+            }
 
-        // Temperature Converter
-        public static double ConvertTemperature(double value, string fromUnit, string toUnit)
-        {
-            if (fromUnit == "C" && toUnit == "F") return value * 9 / 5 + 32;       // Celsius to Fahrenheit
-            if (fromUnit == "F" && toUnit == "C") return (value - 32) * 5 / 9;     // Fahrenheit to Celsius
-            if (fromUnit == "C" && toUnit == "K") return value + 273.15;          // Celsius to Kelvin
-            if (fromUnit == "K" && toUnit == "C") return value - 273.15;          // Kelvin to Celsius
-            if (fromUnit == "F" && toUnit == "K") return (value - 32) * 5 / 9 + 273.15; // Fahrenheit to Kelvin
-            if (fromUnit == "K" && toUnit == "F") return (value - 273.15) * 9 / 5 + 32; // Kelvin to Fahrenheit
+            // Temperature Converter
+            public static double ConvertTemperature(double value, string fromUnit, string toUnit)
+            {
+                if (fromUnit == "C" && toUnit == "F") return value * 9 / 5 + 32;       // Celsius to Fahrenheit
+                if (fromUnit == "F" && toUnit == "C") return (value - 32) * 5 / 9;     // Fahrenheit to Celsius
+                if (fromUnit == "C" && toUnit == "K") return value + 273.15;          // Celsius to Kelvin
+                if (fromUnit == "K" && toUnit == "C") return value - 273.15;          // Kelvin to Celsius
+                if (fromUnit == "F" && toUnit == "K") return (value - 32) * 5 / 9 + 273.15; // Fahrenheit to Kelvin
+                if (fromUnit == "K" && toUnit == "F") return (value - 273.15) * 9 / 5 + 32; // Kelvin to Fahrenheit
 
-            if (fromUnit == toUnit) return value; // No conversion needed
-            throw new ArgumentException("Invalid temperature units specified.");
-        }
+                if (fromUnit == toUnit) return value; // No conversion needed
+                throw new ArgumentException("Invalid temperature units specified.");
+            }
 
-        // Pressure Converter
-        public static double ConvertPressure(double value, string fromUnit, string toUnit)
-        {
-            var unitMap = new Dictionary<string, double>
+            // Pressure Converter
+            public static double ConvertPressure(double value, string fromUnit, string toUnit)
+            {
+                var unitMap = new Dictionary<string, double>
             {
                 { "Pa", 1 },        // Pascal
                 { "kPa", 1000 },    // Kilopascal
@@ -146,16 +146,16 @@ namespace JSCSH
                 { "torr", 133.322 } // Torr
             };
 
-            if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
-                throw new ArgumentException("Invalid pressure units specified.");
+                if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                    throw new ArgumentException("Invalid pressure units specified.");
 
-            return value * (unitMap[fromUnit] / unitMap[toUnit]);
-        }
+                return value * (unitMap[fromUnit] / unitMap[toUnit]);
+            }
 
-        // Energy Converter
-        public static double ConvertEnergy(double value, string fromUnit, string toUnit)
-        {
-            var unitMap = new Dictionary<string, double>
+            // Energy Converter
+            public static double ConvertEnergy(double value, string fromUnit, string toUnit)
+            {
+                var unitMap = new Dictionary<string, double>
             {
                 { "J", 1 },         // Joule
                 { "kJ", 1000 },     // Kilojoule
@@ -166,16 +166,16 @@ namespace JSCSH
                 { "eV", 1.60218e-19 } // Electronvolt
             };
 
-            if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
-                throw new ArgumentException("Invalid energy units specified.");
+                if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                    throw new ArgumentException("Invalid energy units specified.");
 
-            return value * (unitMap[fromUnit] / unitMap[toUnit]);
-        }
+                return value * (unitMap[fromUnit] / unitMap[toUnit]);
+            }
 
-        // Frequency Converter
-        public static double ConvertFrequency(double value, string fromUnit, string toUnit)
-        {
-            var unitMap = new Dictionary<string, double>
+            // Frequency Converter
+            public static double ConvertFrequency(double value, string fromUnit, string toUnit)
+            {
+                var unitMap = new Dictionary<string, double>
             {
                 { "Hz", 1 },        // Hertz
                 { "kHz", 1000 },    // Kilohertz
@@ -184,15 +184,14 @@ namespace JSCSH
                 { "THz", 1e12 }     // Terahertz
             };
 
-            if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
-                throw new ArgumentException("Invalid frequency units specified.");
+                if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                    throw new ArgumentException("Invalid frequency units specified.");
 
-            return value * (unitMap[fromUnit] / unitMap[toUnit]);
+                return value * (unitMap[fromUnit] / unitMap[toUnit]);
+            }
         }
-    }
 
     }
-    },
     namespace MathUtilities
     {
         public static class MathOperations
@@ -526,6 +525,7 @@ namespace JSCSH
     },
     namespace BeckEnd
     {
-        
+
     }
+
 }
