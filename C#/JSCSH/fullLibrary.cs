@@ -278,11 +278,95 @@ namespace JSCSH
 
             return value * (unitMap[fromUnit] / unitMap[toUnit]);
         }
+        public static double ConvertFuelEfficiency(double value, string fromUnit, string toUnit)
+    {
+        var unitMap = new Dictionary<string, double>
+            {
+                { "mpg", 1 },                 // Miles per gallon
+                { "kmpl", 2.35215 },          // Kilometers per liter
+                { "L/100km", 235.214583 },    // Liters per 100 kilometers
+            };
+
+        if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+            throw new ArgumentException("Invalid fuel efficiency units specified.");
+
+        return (value * unitMap[fromUnit]) / unitMap[toUnit];
     }
 
+    // Radioactivity Converter
+    public static double ConvertRadioactivity(double value, string fromUnit, string toUnit)
+    {
+        var unitMap = new Dictionary<string, double>
+            {
+                { "Bq", 1 },              // Becquerel
+                { "Ci", 3.7e10 },         // Curie
+                { "dps", 1 },             // Disintegrations per second (same as Becquerel)
+                { "rutherford", 1e6 }     // Rutherford
+            };
+
+        if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+            throw new ArgumentException("Invalid radioactivity units specified.");
+
+        return value * (unitMap[fromUnit] / unitMap[toUnit]);
+    }
+
+    // Data Transfer Rate Converter
+    public static double ConvertDataTransferRate(double value, string fromUnit, string toUnit)
+    {
+        var unitMap = new Dictionary<string, double>
+            {
+                { "bps", 1 },            // Bits per second
+                { "Kbps", 1e3 },         // Kilobits per second
+                { "Mbps", 1e6 },         // Megabits per second
+                { "Gbps", 1e9 },         // Gigabits per second
+                { "Tbps", 1e12 },        // Terabits per second
+                { "Bps", 8 },            // Bytes per second
+                { "KBps", 8e3 },         // Kilobytes per second
+                { "MBps", 8e6 },         // Megabytes per second
+                { "GBps", 8e9 }          // Gigabytes per second
+            };
+
+        if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+            throw new ArgumentException("Invalid data transfer rate units specified.");
+
+        return value * (unitMap[fromUnit] / unitMap[toUnit]);
+    }
+
+    // Capacitance Converter
+    public static double ConvertCapacitance(double value, string fromUnit, string toUnit)
+    {
+        var unitMap = new Dictionary<string, double>
+            {
+                { "F", 1 },           // Farad
+                { "mF", 1e-3 },       // Millifarad
+                { "µF", 1e-6 },       // Microfarad
+                { "nF", 1e-9 },       // Nanofarad
+                { "pF", 1e-12 }       // Picofarad
+            };
+
+        if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+            throw new ArgumentException("Invalid capacitance units specified.");
+
+        return value * (unitMap[fromUnit] / unitMap[toUnit]);
+    }
+
+    // Illumination Intensity Converter
+    public static double ConvertIlluminationIntensity(double value, string fromUnit, string toUnit)
+    {
+        var unitMap = new Dictionary<string, double>
+            {
+                { "lux", 1 },            // Lux
+                { "foot-candle", 10.7639 }, // Foot-candle
+            };
+
+        if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+            throw new ArgumentException("Invalid illumination intensity units specified.");
+
+        return value * (unitMap[fromUnit] / unitMap[toUnit]);
+    }
     }
     namespace MathUtilities
-    {
+{
         public static class MathOperations
         {
             // Adds two numbers
@@ -609,12 +693,11 @@ namespace JSCSH
         }
     }
     namespace Crypto
-    {
+{
 
-    },
+},
     namespace BeckEnd
     {
 
     }
-
 }
