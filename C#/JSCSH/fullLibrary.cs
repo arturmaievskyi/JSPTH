@@ -6,100 +6,190 @@ namespace JSCSH
     namespace convertors
     {
         public static class Converters
-    {
-        // Storage Converter
-        public static double ConvertStorage(double value, string fromUnit, string toUnit)
+        {
+            // Storage Converter
+            public static double ConvertStorage(double value, string fromUnit, string toUnit)
+            {
+                var unitMap = new Dictionary<string, double>
+                {
+                    { "B", 1 },            // Byte
+                    { "KB", 1024 },        // Kilobyte
+                    { "MB", 1024 * 1024 }, // Megabyte
+                    { "GB", 1024 * 1024 * 1024 }, // Gigabyte
+                    { "TB", Math.Pow(1024, 4) }   // Terabyte
+                };
+
+                if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                    throw new ArgumentException("Invalid storage units specified.");
+
+                return value * (unitMap[fromUnit] / unitMap[toUnit]);
+            }
+
+            // Area Converter
+            public static double ConvertArea(double value, string fromUnit, string toUnit)
+            {
+                var unitMap = new Dictionary<string, double>
+                {
+                    { "m2", 1 },      // Square Meter
+                    { "km2", 1e6 },   // Square Kilometer
+                    { "ft2", 0.092903 }, // Square Foot
+                    { "yd2", 0.836127 }, // Square Yard
+                    { "acre", 4046.86 }, // Acre
+                    { "ha", 10000 }   // Hectare
+                };
+
+                if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                    throw new ArgumentException("Invalid area units specified.");
+
+                return value * (unitMap[fromUnit] / unitMap[toUnit]);
+            }
+
+            // Volume Converter
+            public static double ConvertVolume(double value, string fromUnit, string toUnit)
+            {
+                var unitMap = new Dictionary<string, double>
+                {
+                    { "m3", 1 },        // Cubic Meter
+                    { "cm3", 1e-6 },    // Cubic Centimeter
+                    { "litre", 0.001 }, // Liter
+                    { "gallon", 0.00378541 }, // US Gallon
+                    { "quart", 0.000946353 }, // US Quart
+                    { "pint", 0.000473176 }   // US Pint
+                };
+
+                if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                    throw new ArgumentException("Invalid volume units specified.");
+
+                return value * (unitMap[fromUnit] / unitMap[toUnit]);
+            }
+
+            // Speed Converter
+            public static double ConvertSpeed(double value, string fromUnit, string toUnit)
+            {
+                var unitMap = new Dictionary<string, double>
+                {
+                    { "mps", 1 },         // Meters per second
+                    { "kph", 0.277778 },  // Kilometers per hour
+                    { "mph", 0.44704 },   // Miles per hour
+                    { "fps", 0.3048 },    // Feet per second
+                    { "knots", 0.514444 } // Knots
+                };
+
+                if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                    throw new ArgumentException("Invalid speed units specified.");
+
+                return value * (unitMap[fromUnit] / unitMap[toUnit]);
+            }
+
+            // Mass Converter
+            public static double ConvertMass(double value, string fromUnit, string toUnit)
+            {
+                var unitMap = new Dictionary<string, double>
+                {
+                    { "g", 1 },           // Gram
+                    { "kg", 1000 },       // Kilogram
+                    { "mg", 0.001 },      // Milligram
+                    { "lb", 453.592 },    // Pound
+                    { "oz", 28.3495 },    // Ounce
+                    { "ton", 1e6 }        // Metric Ton
+                };
+
+                if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                    throw new ArgumentException("Invalid mass units specified.");
+
+                return value * (unitMap[fromUnit] / unitMap[toUnit]);
+            },
+                public static double ConvertDistance(double value, string fromUnit, string toUnit)
         {
             var unitMap = new Dictionary<string, double>
             {
-                { "B", 1 },            // Byte
-                { "KB", 1024 },        // Kilobyte
-                { "MB", 1024 * 1024 }, // Megabyte
-                { "GB", 1024 * 1024 * 1024 }, // Gigabyte
-                { "TB", Math.Pow(1024, 4) }   // Terabyte
+                { "m", 1 },        // Meter
+                { "km", 1000 },    // Kilometer
+                { "cm", 0.01 },    // Centimeter
+                { "mm", 0.001 },   // Millimeter
+                { "mi", 1609.34 }, // Mile
+                { "yd", 0.9144 },  // Yard
+                { "ft", 0.3048 },  // Foot
+                { "in", 0.0254 }   // Inch
             };
 
             if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
-                throw new ArgumentException("Invalid storage units specified.");
+                throw new ArgumentException("Invalid distance units specified.");
 
             return value * (unitMap[fromUnit] / unitMap[toUnit]);
         }
 
-        // Area Converter
-        public static double ConvertArea(double value, string fromUnit, string toUnit)
+        // Temperature Converter
+        public static double ConvertTemperature(double value, string fromUnit, string toUnit)
+        {
+            if (fromUnit == "C" && toUnit == "F") return value * 9 / 5 + 32;       // Celsius to Fahrenheit
+            if (fromUnit == "F" && toUnit == "C") return (value - 32) * 5 / 9;     // Fahrenheit to Celsius
+            if (fromUnit == "C" && toUnit == "K") return value + 273.15;          // Celsius to Kelvin
+            if (fromUnit == "K" && toUnit == "C") return value - 273.15;          // Kelvin to Celsius
+            if (fromUnit == "F" && toUnit == "K") return (value - 32) * 5 / 9 + 273.15; // Fahrenheit to Kelvin
+            if (fromUnit == "K" && toUnit == "F") return (value - 273.15) * 9 / 5 + 32; // Kelvin to Fahrenheit
+
+            if (fromUnit == toUnit) return value; // No conversion needed
+            throw new ArgumentException("Invalid temperature units specified.");
+        }
+
+        // Pressure Converter
+        public static double ConvertPressure(double value, string fromUnit, string toUnit)
         {
             var unitMap = new Dictionary<string, double>
             {
-                { "m2", 1 },      // Square Meter
-                { "km2", 1e6 },   // Square Kilometer
-                { "ft2", 0.092903 }, // Square Foot
-                { "yd2", 0.836127 }, // Square Yard
-                { "acre", 4046.86 }, // Acre
-                { "ha", 10000 }   // Hectare
+                { "Pa", 1 },        // Pascal
+                { "kPa", 1000 },    // Kilopascal
+                { "atm", 101325 },  // Atmosphere
+                { "bar", 100000 },  // Bar
+                { "psi", 6894.76 }, // Pounds per square inch
+                { "torr", 133.322 } // Torr
             };
 
             if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
-                throw new ArgumentException("Invalid area units specified.");
+                throw new ArgumentException("Invalid pressure units specified.");
 
             return value * (unitMap[fromUnit] / unitMap[toUnit]);
         }
 
-        // Volume Converter
-        public static double ConvertVolume(double value, string fromUnit, string toUnit)
+        // Energy Converter
+        public static double ConvertEnergy(double value, string fromUnit, string toUnit)
         {
             var unitMap = new Dictionary<string, double>
             {
-                { "m3", 1 },        // Cubic Meter
-                { "cm3", 1e-6 },    // Cubic Centimeter
-                { "litre", 0.001 }, // Liter
-                { "gallon", 0.00378541 }, // US Gallon
-                { "quart", 0.000946353 }, // US Quart
-                { "pint", 0.000473176 }   // US Pint
+                { "J", 1 },         // Joule
+                { "kJ", 1000 },     // Kilojoule
+                { "cal", 4.184 },   // Calorie
+                { "kcal", 4184 },   // Kilocalorie
+                { "Wh", 3600 },     // Watt-hour
+                { "kWh", 3600000 }, // Kilowatt-hour
+                { "eV", 1.60218e-19 } // Electronvolt
             };
 
             if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
-                throw new ArgumentException("Invalid volume units specified.");
+                throw new ArgumentException("Invalid energy units specified.");
 
             return value * (unitMap[fromUnit] / unitMap[toUnit]);
         }
 
-        // Speed Converter
-        public static double ConvertSpeed(double value, string fromUnit, string toUnit)
+        // Frequency Converter
+        public static double ConvertFrequency(double value, string fromUnit, string toUnit)
         {
             var unitMap = new Dictionary<string, double>
             {
-                { "mps", 1 },         // Meters per second
-                { "kph", 0.277778 },  // Kilometers per hour
-                { "mph", 0.44704 },   // Miles per hour
-                { "fps", 0.3048 },    // Feet per second
-                { "knots", 0.514444 } // Knots
+                { "Hz", 1 },        // Hertz
+                { "kHz", 1000 },    // Kilohertz
+                { "MHz", 1e6 },     // Megahertz
+                { "GHz", 1e9 },     // Gigahertz
+                { "THz", 1e12 }     // Terahertz
             };
 
             if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
-                throw new ArgumentException("Invalid speed units specified.");
+                throw new ArgumentException("Invalid frequency units specified.");
 
             return value * (unitMap[fromUnit] / unitMap[toUnit]);
         }
-
-        // Mass Converter
-        public static double ConvertMass(double value, string fromUnit, string toUnit)
-        {
-            var unitMap = new Dictionary<string, double>
-            {
-                { "g", 1 },           // Gram
-                { "kg", 1000 },       // Kilogram
-                { "mg", 0.001 },      // Milligram
-                { "lb", 453.592 },    // Pound
-                { "oz", 28.3495 },    // Ounce
-                { "ton", 1e6 }        // Metric Ton
-            };
-
-            if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
-                throw new ArgumentException("Invalid mass units specified.");
-
-            return value * (unitMap[fromUnit] / unitMap[toUnit]);
-        },
-
+    }
 
     }
     },
