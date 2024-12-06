@@ -273,3 +273,127 @@ func (Converters) LuminanceConverter(value float64, from, to string) (float64, e
 	}
 	return value * fromFactor / toFactor, nil
 }
+func (Converters) FuelEfficiencyConverter(value float64, from, to string) (float64, error) {
+	units := map[string]float64{
+		"miles_per_gallon":          1,
+		"kilometers_per_liter":      2.35215,
+		"liters_per_100_kilometers": 235.215,
+	}
+	fromFactor, ok1 := units[from]
+	toFactor, ok2 := units[to]
+	if !ok1 || !ok2 {
+		return 0, fmt.Errorf("invalid units: %s or %s", from, to)
+	}
+	return value * fromFactor / toFactor, nil
+}
+
+// RadioactivityConverter converts between different radioactivity units.
+func (Converters) RadioactivityConverter(value float64, from, to string) (float64, error) {
+	units := map[string]float64{
+		"becquerel":      1,
+		"curie":          3.7e10,
+		"rutherford":     1e6,
+		"disintegrations_per_second": 1,
+	}
+	fromFactor, ok1 := units[from]
+	toFactor, ok2 := units[to]
+	if !ok1 || !ok2 {
+		return 0, fmt.Errorf("invalid units: %s or %s", from, to)
+	}
+	return value * fromFactor / toFactor, nil
+}
+
+// DataTransferRateConverter converts between different data transfer rate units.
+func (Converters) DataTransferRateConverter(value float64, from, to string) (float64, error) {
+	units := map[string]float64{
+		"bps":       1,
+		"Kbps":      1e3,
+		"Mbps":      1e6,
+		"Gbps":      1e9,
+		"Tbps":      1e12,
+		"Bytes_per_second": 8,
+	}
+	fromFactor, ok1 := units[from]
+	toFactor, ok2 := units[to]
+	if !ok1 || !ok2 {
+		return 0, fmt.Errorf("invalid units: %s or %s", from, to)
+	}
+	return value * fromFactor / toFactor, nil
+}
+
+// CapacitanceConverter converts between different capacitance units.
+func (Converters) CapacitanceConverter(value float64, from, to string) (float64, error) {
+	units := map[string]float64{
+		"farad":       1,
+		"millifarad":  0.001,
+		"microfarad":  0.000001,
+		"nanofarad":   0.000000001,
+		"picofarad":   0.000000000001,
+	}
+	fromFactor, ok1 := units[from]
+	toFactor, ok2 := units[to]
+	if !ok1 || !ok2 {
+		return 0, fmt.Errorf("invalid units: %s or %s", from, to)
+	}
+	return value * fromFactor / toFactor, nil
+}
+
+// IlluminationIntensityConverter converts between different illumination intensity units.
+func (Converters) IlluminationIntensityConverter(value float64, from, to string) (float64, error) {
+	units := map[string]float64{
+		"lux":        1,
+		"foot_candle": 10.764,
+		"phot":       10000,
+	}
+	fromFactor, ok1 := units[from]
+	toFactor, ok2 := units[to]
+	if !ok1 || !ok2 {
+		return 0, fmt.Errorf("invalid units: %s or %s", from, to)
+	}
+	return value * fromFactor / toFactor, nil
+}
+
+// Main function to demonstrate usage.
+func main() {
+	converter := Converters{}
+
+	// Fuel Efficiency Conversion Example
+	fuelEfficiency, err := converter.FuelEfficiencyConverter(1, "miles_per_gallon", "kilometers_per_liter")
+	if err == nil {
+		fmt.Println("Fuel Efficiency Conversion (1 mpg to km/l):", fuelEfficiency)
+	} else {
+		fmt.Println("FuelEfficiencyConverter Error:", err)
+	}
+
+	// Radioactivity Conversion Example
+	radioactivity, err := converter.RadioactivityConverter(1, "curie", "becquerel")
+	if err == nil {
+		fmt.Println("Radioactivity Conversion (1 curie to becquerel):", radioactivity)
+	} else {
+		fmt.Println("RadioactivityConverter Error:", err)
+	}
+
+	// Data Transfer Rate Conversion Example
+	dataRate, err := converter.DataTransferRateConverter(1, "Gbps", "Mbps")
+	if err == nil {
+		fmt.Println("Data Transfer Rate Conversion (1 Gbps to Mbps):", dataRate)
+	} else {
+		fmt.Println("DataTransferRateConverter Error:", err)
+	}
+
+	// Capacitance Conversion Example
+	capacitance, err := converter.CapacitanceConverter(1, "farad", "microfarad")
+	if err == nil {
+		fmt.Println("Capacitance Conversion (1 farad to microfarad):", capacitance)
+	} else {
+		fmt.Println("CapacitanceConverter Error:", err)
+	}
+
+	// Illumination Intensity Conversion Example
+	illumination, err := converter.IlluminationIntensityConverter(1, "lux", "foot_candle")
+	if err == nil {
+		fmt.Println("Illumination Intensity Conversion (1 lux to foot-candles):", illumination)
+	} else {
+		fmt.Println("IlluminationIntensityConverter Error:", err)
+	}
+}
