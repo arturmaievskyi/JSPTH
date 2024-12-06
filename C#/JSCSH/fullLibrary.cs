@@ -5,7 +5,7 @@ namespace JSCSH
 {
     namespace convertors
     {
-            public static class Converters
+        public static class Converters
     {
         // Storage Converter
         public static double ConvertStorage(double value, string fromUnit, string toUnit)
@@ -430,12 +430,10 @@ namespace JSCSH
             }
         }
     }
-
     namespace Crypto
     {
 
     },
-
     namespace BeckEnd
     {
         
