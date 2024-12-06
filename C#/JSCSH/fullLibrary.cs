@@ -189,7 +189,96 @@ namespace JSCSH
 
                 return value * (unitMap[fromUnit] / unitMap[toUnit]);
             }
+        },
+                public static double ConvertPower(double value, string fromUnit, string toUnit)
+        {
+            var unitMap = new Dictionary<string, double>
+            {
+                { "W", 1 },         // Watt
+                { "kW", 1000 },     // Kilowatt
+                { "MW", 1e6 },      // Megawatt
+                { "hp", 745.7 },    // Horsepower
+                { "cal/s", 4.184 }, // Calories per second
+                { "BTU/h", 0.293071 } // British Thermal Unit per hour
+            };
+
+            if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                throw new ArgumentException("Invalid power units specified.");
+
+            return value * (unitMap[fromUnit] / unitMap[toUnit]);
         }
+
+        // Force Converter
+        public static double ConvertForce(double value, string fromUnit, string toUnit)
+        {
+            var unitMap = new Dictionary<string, double>
+            {
+                { "N", 1 },       // Newton
+                { "kN", 1000 },   // Kilonewton
+                { "dyn", 1e-5 },  // Dyne
+                { "lbf", 4.44822 }, // Pound-force
+                { "kgf", 9.80665 }  // Kilogram-force
+            };
+
+            if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                throw new ArgumentException("Invalid force units specified.");
+
+            return value * (unitMap[fromUnit] / unitMap[toUnit]);
+        }
+
+        // Torque Converter
+        public static double ConvertTorque(double value, string fromUnit, string toUnit)
+        {
+            var unitMap = new Dictionary<string, double>
+            {
+                { "Nm", 1 },         // Newton-meter
+                { "kNm", 1000 },     // Kilonewton-meter
+                { "lbft", 1.35582 }, // Pound-foot
+                { "kgfm", 9.80665 }  // Kilogram-force meter
+            };
+
+            if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                throw new ArgumentException("Invalid torque units specified.");
+
+            return value * (unitMap[fromUnit] / unitMap[toUnit]);
+        }
+
+        // Density Converter
+        public static double ConvertDensity(double value, string fromUnit, string toUnit)
+        {
+            var unitMap = new Dictionary<string, double>
+            {
+                { "kg/m3", 1 },          // Kilogram per cubic meter
+                { "g/cm3", 1000 },       // Gram per cubic centimeter
+                { "lb/ft3", 16.0185 },   // Pound per cubic foot
+                { "lb/in3", 27679.9 },   // Pound per cubic inch
+                { "g/L", 1 },            // Gram per liter
+            };
+
+            if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                throw new ArgumentException("Invalid density units specified.");
+
+            return value * (unitMap[fromUnit] / unitMap[toUnit]);
+        }
+
+        // Luminance Converter
+        public static double ConvertLuminance(double value, string fromUnit, string toUnit)
+        {
+            var unitMap = new Dictionary<string, double>
+            {
+                { "cd/m2", 1 },          // Candela per square meter
+                { "nit", 1 },            // Nit (alias of cd/m2)
+                { "foot-lambert", 3.426 }, // Foot-lambert
+                { "stilb", 10000 },      // Stilb
+                { "lambert", 3183.0988618 }, // Lambert
+            };
+
+            if (!unitMap.ContainsKey(fromUnit) || !unitMap.ContainsKey(toUnit))
+                throw new ArgumentException("Invalid luminance units specified.");
+
+            return value * (unitMap[fromUnit] / unitMap[toUnit]);
+        }
+    }
 
     }
     namespace MathUtilities
