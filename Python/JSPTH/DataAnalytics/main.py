@@ -3,7 +3,6 @@
 
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
 import sqlite3
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -19,10 +18,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-class VisualizationApp(App):
+
+class EnhancedVisualizationApp(App):
     def build(self):
         self.data = None  # DataFrame for loaded data
-        self.selected_column = None  # Currently selected column
+        self.selected_column = None  # Column for single-column visualizations
+        self.selected_x_column = None  # X-axis column for scatter plots
+        self.selected_y_column = None  # Y-axis column for scatter plots
         self.selected_chart_type = "Bar Chart"  # Default chart type
 
         # Root layout
@@ -33,12 +35,24 @@ class VisualizationApp(App):
         file_button = Button(text="Browse File", size_hint=(1, 0.1))
         file_button.bind(on_press=self.open_file_chooser)
 
-        # Column selection
+        # Column selection for single-column visualizations
         column_label = Label(text="Select Column:", size_hint=(1, 0.1))
         self.column_dropdown = DropDown()
         self.column_button = Button(text="Select Column", size_hint=(1, 0.1))
         self.column_button.bind(on_release=self.column_dropdown.open)
         self.column_dropdown.bind(on_select=lambda instance, x: self.select_column(x))
+
+        # Column selection for scatter plot (X and Y axes)
+        scatter_label = Label(text="Select Columns for Scatter Plot:", size_hint=(1, 0.1))
+        self.x_column_dropdown = DropDown()
+        self.x_column_button = Button(text="Select X Column", size_hint=(1, 0.1))
+        self.x_column_button.bind(on_release=self.x_column_dropdown.open)
+        self.x_column_dropdown.bind(on_select=lambda instance, x: self.select_x_column(x))
+
+        self.y_column_dropdown = DropDown()
+        self.y_column_button = Button(text="Select Y Column", size_hint=(1, 0.1))
+        self.y_column_button.bind(on_release=self.y_column_dropdown.open)
+        self.y_column_dropdown.bind(on_select=lambda instance, x: self.select_y_column(x))
 
         # Chart type selection
         chart_type_label = Label(text="Select Chart Type:", size_hint=(1, 0.1))
@@ -46,7 +60,7 @@ class VisualizationApp(App):
         self.chart_type_button = Button(text="Bar Chart", size_hint=(1, 0.1))
         self.chart_type_button.bind(on_release=self.chart_type_dropdown.open)
         self.chart_type_dropdown.bind(on_select=lambda instance, x: self.select_chart_type(x))
-        for chart_type in ["Bar Chart", "Line Chart", "Scatter Plot", "Histogram"]:
+        for chart_type in ["Bar Chart", "Line Chart", "Scatter Plot", "Histogram", "Pie Chart", "Heatmap"]:
             btn = Button(text=chart_type, size_hint_y=None, height=44)
             btn.bind(on_release=lambda btn: self.chart_type_dropdown.select(btn.text))
             self.chart_type_dropdown.add_widget(btn)
@@ -56,6 +70,10 @@ class VisualizationApp(App):
         self.chart_title_input = TextInput(hint_text="Enter Chart Title", size_hint=(1, 0.1))
         self.chart_color_input = TextInput(hint_text="Enter Color (e.g., blue)", size_hint=(1, 0.1))
         self.histogram_bins_input = TextInput(hint_text="Bins (for Histogram)", size_hint=(1, 0.1))
+
+        # Save chart button
+        save_button = Button(text="Save Chart as Image", size_hint=(1, 0.2))
+        save_button.bind(on_press=self.save_chart)
 
         # Render chart button
         render_button = Button(text="Render Chart", size_hint=(1, 0.2))
@@ -69,12 +87,16 @@ class VisualizationApp(App):
         self.root.add_widget(file_button)
         self.root.add_widget(column_label)
         self.root.add_widget(self.column_button)
+        self.root.add_widget(scatter_label)
+        self.root.add_widget(self.x_column_button)
+        self.root.add_widget(self.y_column_button)
         self.root.add_widget(chart_type_label)
         self.root.add_widget(self.chart_type_button)
         self.root.add_widget(customization_label)
         self.root.add_widget(self.chart_title_input)
         self.root.add_widget(self.chart_color_input)
         self.root.add_widget(self.histogram_bins_input)
+        self.root.add_widget(save_button)
         self.root.add_widget(render_button)
         self.root.add_widget(self.chart_image)
 
@@ -100,28 +122,52 @@ class VisualizationApp(App):
                 self.data = pd.read_excel(file_path)
             else:
                 raise ValueError("Unsupported file type! Please use CSV or Excel files.")
-            self.populate_column_dropdown()
+            self.populate_column_dropdowns()
             popup.dismiss()
         except Exception as e:
             popup.title = f"Error: {e}"
 
-    def populate_column_dropdown(self):
+    def populate_column_dropdowns(self):
         """
-        Populates the dropdown with column names from the dataset.
+        Populates dropdowns with column names for selection.
         """
         if self.data is not None:
             self.column_dropdown.clear_widgets()
+            self.x_column_dropdown.clear_widgets()
+            self.y_column_dropdown.clear_widgets()
             for column in self.data.columns:
                 btn = Button(text=column, size_hint_y=None, height=44)
                 btn.bind(on_release=lambda btn: self.column_dropdown.select(btn.text))
                 self.column_dropdown.add_widget(btn)
 
+                btn_x = Button(text=column, size_hint_y=None, height=44)
+                btn_x.bind(on_release=lambda btn: self.x_column_dropdown.select(btn.text))
+                self.x_column_dropdown.add_widget(btn_x)
+
+                btn_y = Button(text=column, size_hint_y=None, height=44)
+                btn_y.bind(on_release=lambda btn: self.y_column_dropdown.select(btn.text))
+                self.y_column_dropdown.add_widget(btn_y)
+
     def select_column(self, column):
         """
-        Sets the selected column.
+        Sets the selected column for single-column visualizations.
         """
         self.selected_column = column
         self.column_button.text = column
+
+    def select_x_column(self, column):
+        """
+        Sets the selected X-axis column for scatter plots.
+        """
+        self.selected_x_column = column
+        self.x_column_button.text = column
+
+    def select_y_column(self, column):
+        """
+        Sets the selected Y-axis column for scatter plots.
+        """
+        self.selected_y_column = column
+        self.y_column_button.text = column
 
     def select_chart_type(self, chart_type):
         """
@@ -134,37 +180,36 @@ class VisualizationApp(App):
         """
         Renders the selected chart with customization.
         """
-        if self.data is None or self.selected_column is None:
+        if self.data is None:
             return
 
         plt.clf()
-        column_data = self.data[self.selected_column]
         color = self.chart_color_input.text or 'blue'
-        title = self.chart_title_input.text or f"{self.selected_chart_type} of {self.selected_column}"
+        title = self.chart_title_input.text or f"{self.selected_chart_type} Visualization"
 
         try:
             if self.selected_chart_type == "Bar Chart":
-                column_data.value_counts().plot(kind='bar', color=color)
+                self.data[self.selected_column].value_counts().plot(kind='bar', color=color)
             elif self.selected_chart_type == "Line Chart":
-                column_data.plot(kind='line', marker='o', color=color)
+                self.data[self.selected_column].plot(kind='line', marker='o', color=color)
             elif self.selected_chart_type == "Scatter Plot":
-                x = range(len(column_data))
-                plt.scatter(x, column_data, color=color)
+                self.data.plot.scatter(x=self.selected_x_column, y=self.selected_y_column, color=color)
             elif self.selected_chart_type == "Histogram":
                 bins = int(self.histogram_bins_input.text) if self.histogram_bins_input.text.isdigit() else 10
-                column_data.plot(kind='hist', bins=bins, color=color)
+                self.data[self.selected_column].plot(kind='hist', bins=bins, color=color)
+            elif self.selected_chart_type == "Pie Chart":
+                self.data[self.selected_column].value_counts().plot(kind='pie', autopct='%1.1f%%', colors=sns.color_palette())
+            elif self.selected_chart_type == "Heatmap":
+                sns.heatmap(self.data.corr(), annot=True, cmap='coolwarm')
 
             plt.title(title)
-            plt.xlabel(self.selected_column)
-            plt.ylabel("Frequency" if self.selected_chart_type in ["Bar Chart", "Histogram"] else "Value")
-
             self.display_chart_as_texture()
         except Exception as e:
             print(f"Error rendering chart: {e}")
 
     def display_chart_as_texture(self):
         """
-        Converts the generated Matplotlib chart to a texture for Kivy Image display.
+        Converts the Matplotlib chart to a Kivy-compatible texture.
         """
         plt.savefig('chart.png', bbox_inches='tight')
         texture = Texture.create()
@@ -175,6 +220,12 @@ class VisualizationApp(App):
         texture.flip_vertical()
         self.chart_image.texture = texture
 
+    def save_chart(self, instance):
+        """
+        Saves the current chart as an image.
+        """
+        plt.savefig('saved_chart.png', bbox_inches='tight')
+        print("Chart saved as 'saved_chart.png'")
 
 
 
