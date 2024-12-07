@@ -184,3 +184,87 @@ impl LuminanceConverter {
         nits // 1:1 conversion; both units are equivalent
     }
 }
+
+struct FuelEfficiencyConverter;
+
+impl FuelEfficiencyConverter {
+    fn mpg_to_kpl(mpg: f64) -> f64 {
+        mpg * 0.425144
+    }
+
+    fn kpl_to_mpg(kpl: f64) -> f64 {
+        kpl / 0.425144
+    }
+
+    fn l_per_100km_to_mpg(l_per_100km: f64) -> f64 {
+        235.214 / l_per_100km
+    }
+
+    fn mpg_to_l_per_100km(mpg: f64) -> f64 {
+        235.214 / mpg
+    }
+}
+
+struct RadioactivityConverter;
+
+impl RadioactivityConverter {
+    fn becquerels_to_curie(becquerels: f64) -> f64 {
+        becquerels / 3.7e10
+    }
+
+    fn curie_to_becquerels(curie: f64) -> f64 {
+        curie * 3.7e10
+    }
+}
+
+struct DataTransferRateConverter;
+
+impl DataTransferRateConverter {
+    fn bits_per_second_to_bytes_per_second(bps: f64) -> f64 {
+        bps / 8.0
+    }
+
+    fn bytes_per_second_to_bits_per_second(bps: f64) -> f64 {
+        bps * 8.0
+    }
+
+    fn megabits_per_second_to_megabytes_per_second(mbps: f64) -> f64 {
+        mbps / 8.0
+    }
+
+    fn megabytes_per_second_to_megabits_per_second(mbps: f64) -> f64 {
+        mbps * 8.0
+    }
+}
+
+struct CapacitanceConverter;
+
+impl CapacitanceConverter {
+    fn farads_to_microfarads(farads: f64) -> f64 {
+        farads * 1e6
+    }
+
+    fn microfarads_to_farads(microfarads: f64) -> f64 {
+        microfarads / 1e6
+    }
+
+    fn farads_to_nanofarads(farads: f64) -> f64 {
+        farads * 1e9
+    }
+
+    fn nanofarads_to_farads(nanofarads: f64) -> f64 {
+        nanofarads / 1e9
+    }
+}
+
+struct IlluminationIntensityConverter;
+
+impl IlluminationIntensityConverter {
+    fn lux_to_foot_candles(lux: f64) -> f64 {
+        lux * 0.092903
+    }
+
+    fn foot_candles_to_lux(fc: f64) -> f64 {
+        fc / 0.092903
+    }
+}
