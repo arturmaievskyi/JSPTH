@@ -1,4 +1,5 @@
 struct Math;
+use std::f64;
 
 impl Math {
     fn add(a: f64, b: f64) -> f64 {
@@ -21,7 +22,6 @@ impl Math {
         }
     }
 }
-use std::f64;
 
 /// A MathSolver class for various mathematical computations.
 struct MathSolver;

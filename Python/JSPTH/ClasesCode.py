@@ -14,7 +14,7 @@ import psutil
 import platform
 import math
 
-class Console(ABC):
+class console(ABC):
     def log(arguments):
         '''
         its like print()
@@ -25,13 +25,13 @@ class Console(ABC):
         '''
         
         '''
-        Console.log(arguments)
+        console.log(arguments)
 
     def WrtiteLine(arguments):
         '''
         The function is recomended to use with variables
         '''
-        Console.log(arguments)
+        console.log(arguments)
 
 
     def get(text):
