@@ -694,7 +694,108 @@ namespace JSCSH
     }
     namespace Crypto
 {
+    public static class CryptoUtils
+    {
+        // Hashing with SHA256
+        public static string ComputeSHA256Hash(string input)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(input);
+                byte[] hash = sha256.ComputeHash(bytes);
+                return Convert.ToHexString(hash);
+            }
+        }
 
+        // Symmetric encryption with AES
+        public static (byte[] EncryptedData, byte[] Key, byte[] IV) EncryptAES(string plainText)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.GenerateKey();
+                aes.GenerateIV();
+
+                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                using (var ms = new System.IO.MemoryStream())
+                {
+                    using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                    {
+                        byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+                        cs.Write(plainBytes, 0, plainBytes.Length);
+                    }
+                    return (ms.ToArray(), aes.Key, aes.IV);
+                }
+            }
+        }
+
+        // Symmetric decryption with AES
+        public static string DecryptAES(byte[] encryptedData, byte[] key, byte[] iv)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = key;
+                aes.IV = iv;
+
+                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+                using (var ms = new System.IO.MemoryStream(encryptedData))
+                {
+                    using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (var sr = new System.IO.StreamReader(cs))
+                        {
+                            return sr.ReadToEnd();
+                        }
+                    }
+                }
+            }
+        }
+
+        // RSA key pair generation
+        public static (string PublicKey, string PrivateKey) GenerateRSAKeys()
+        {
+            using (RSA rsa = RSA.Create())
+            {
+                rsa.KeySize = 2048;
+                string publicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
+                string privateKey = Convert.ToBase64String(rsa.ExportPkcs8PrivateKey());
+                return (publicKey, privateKey);
+            }
+        }
+
+        // RSA encryption
+        public static byte[] EncryptRSA(string plainText, string publicKeyBase64)
+        {
+            byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+            using (RSA rsa = RSA.Create())
+            {
+                rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(publicKeyBase64), out _);
+                return rsa.Encrypt(plainBytes, RSAEncryptionPadding.OaepSHA256);
+            }
+        }
+
+        // RSA decryption
+        public static string DecryptRSA(byte[] encryptedData, string privateKeyBase64)
+        {
+            using (RSA rsa = RSA.Create())
+            {
+                rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(privateKeyBase64), out _);
+                byte[] decryptedBytes = rsa.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA256);
+                return Encoding.UTF8.GetString(decryptedBytes);
+            }
+        }
+
+        // HMAC-SHA256
+        public static string ComputeHMACSHA256(string input, string key)
+        {
+            using (HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+            {
+                byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(input));
+                return Convert.ToHexString(hash);
+            }
+        }
+    }
 },
     namespace BeckEnd
     {
