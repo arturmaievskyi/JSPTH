@@ -2,7 +2,7 @@ from JSPTH.ClasesCode import (CapacitanceConverter, console, AreaConverter, Conv
 SpeedConverter,EnergyConverter,TorqueConverter,VolumeConverter,DensityConverter,StorageConverter,DistanceConverter,PressureConverter,
 FrequencyConverter,LuminanceConverter,TemperatureConverter,RadioactivityConverter,FuelEfficiencyConverter,DataTransferRateConverter,IlluminationIntensityConverter,
 OSUtilities, ProcessManager, EventEmitter, Managment, TimeManager, Files)
-from JSPTH.Crypto import*
+from JSPTH.Crypto import Aes, Rsa, Hash, Key, Signature
 from JSPTH.Math import*
 from JSPTH.BeckEnd.server import SimpleServer
 from JSPTH.BeckEnd.structure import create_project_structure
@@ -16,8 +16,14 @@ from JSPTH.Math.OtherMath import AngleConverter
 
 
 __all__ = [
+    'Aes',
+    'Rsa',
+    'Hash',
+    'Key',
+    'Signature',
     'ClasesCode',
     'console',
+    'Console',
     'CapacitanceConverter',
     'AreaConverter',
     'Convertation',

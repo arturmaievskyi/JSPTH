@@ -34,7 +34,7 @@ class console(ABC):
         console.log(arguments)
 
 
-    def get(text):
+    def Get(text):
         text_input = input(text)
         return text_input
 
@@ -44,7 +44,7 @@ class console(ABC):
         return text_input
 
 
-    def FloatInt(text):
+    def FloatGet(text):
         text_input = float(input(text))
         return text_input
   
