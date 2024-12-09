@@ -1,5 +1,6 @@
 ﻿using System;
-
+using System.Security.Cryptography;
+using System.Text;
 
 namespace JSCSH
 {
@@ -794,6 +795,92 @@ namespace JSCSH
                 byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(input));
                 return Convert.ToHexString(hash);
             }
+        }
+    
+            public static string ComputeSHA512Hash(string input)
+        {
+            using (SHA512 sha512 = SHA512.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(input);
+                byte[] hash = sha512.ComputeHash(bytes);
+                return Convert.ToHexString(hash);
+            }
+        }
+
+        // Key Derivation using PBKDF2
+        public static byte[] DeriveKeyPBKDF2(string password, byte[] salt, int iterations, int keySize)
+        {
+            using (var rfc2898 = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA256))
+            {
+                return rfc2898.GetBytes(keySize);
+            }
+        }
+
+        // Digital Signature with ECDSA
+        public static (string PublicKey, string PrivateKey) GenerateECDSAKeys()
+        {
+            using (ECDsa ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256))
+            {
+                string publicKey = Convert.ToBase64String(ecdsa.ExportSubjectPublicKeyInfo());
+                string privateKey = Convert.ToBase64String(ecdsa.ExportPkcs8PrivateKey());
+                return (publicKey, privateKey);
+            }
+        }
+
+        public static byte[] SignDataECDSA(string data, string privateKeyBase64)
+        {
+            using (ECDsa ecdsa = ECDsa.Create())
+            {
+                ecdsa.ImportPkcs8PrivateKey(Convert.FromBase64String(privateKeyBase64), out _);
+                byte[] dataBytes = Encoding.UTF8.GetBytes(data);
+                return ecdsa.SignData(dataBytes, HashAlgorithmName.SHA256);
+            }
+        }
+
+        public static bool VerifySignatureECDSA(string data, byte[] signature, string publicKeyBase64)
+        {
+            using (ECDsa ecdsa = ECDsa.Create())
+            {
+                ecdsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(publicKeyBase64), out _);
+                byte[] dataBytes = Encoding.UTF8.GetBytes(data);
+                return ecdsa.VerifyData(dataBytes, signature, HashAlgorithmName.SHA256);
+            }
+        }
+
+        // Symmetric Encryption with ChaCha20 (using BouncyCastle)
+        public static byte[] EncryptChaCha20(string plainText, byte[] key, byte[] nonce)
+        {
+            if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for ChaCha20.");
+            if (nonce.Length != 12) throw new ArgumentException("Nonce must be 12 bytes for ChaCha20.");
+
+            var plaintextBytes = Encoding.UTF8.GetBytes(plainText);
+            byte[] ciphertext = new byte[plaintextBytes.Length];
+
+            using (var cipher = new Org.BouncyCastle.Crypto.Engines.ChaChaEngine())
+            {
+                cipher.Init(true, new Org.BouncyCastle.Crypto.Parameters.ParametersWithIV(
+                    new Org.BouncyCastle.Crypto.Parameters.KeyParameter(key), nonce));
+                cipher.ProcessBytes(plaintextBytes, 0, plaintextBytes.Length, ciphertext, 0);
+            }
+
+            return ciphertext;
+        }
+
+        public static string DecryptChaCha20(byte[] encryptedData, byte[] key, byte[] nonce)
+        {
+            if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for ChaCha20.");
+            if (nonce.Length != 12) throw new ArgumentException("Nonce must be 12 bytes for ChaCha20.");
+
+            byte[] plaintext = new byte[encryptedData.Length];
+
+            using (var cipher = new Org.BouncyCastle.Crypto.Engines.ChaChaEngine())
+            {
+                cipher.Init(false, new Org.BouncyCastle.Crypto.Parameters.ParametersWithIV(
+                    new Org.BouncyCastle.Crypto.Parameters.KeyParameter(key), nonce));
+                cipher.ProcessBytes(encryptedData, 0, encryptedData.Length, plaintext, 0);
+            }
+
+            return Encoding.UTF8.GetString(plaintext);
         }
     }
 },
