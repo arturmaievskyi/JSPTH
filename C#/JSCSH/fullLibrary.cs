@@ -22,6 +22,11 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace JSCSH
 {
@@ -1318,68 +1323,82 @@ namespace JSCSH
     {
         public class WebServer
         {
-            private readonly HttpListener _listener = new HttpListener();
-            private readonly Dictionary<string, Func<HttpContext, Task>> _routes = new();
+        private readonly HttpListener _listener = new HttpListener();
+        private readonly List<Route> _routes = new();
+        private readonly List<Func<RequestDelegate, RequestDelegate>> _middlewares = new();
 
-            public WebServer(string prefix)
-            {
-                _listener.Prefixes.Add(prefix);
-            }
-
-            // Register routes
-            public void MapRoute(string route, Func<HttpContext, Task> handler)
-            {
-                _routes[route] = handler;
-            }
-
-            // Start the server
-            public async Task StartAsync()
-            {
-                _listener.Start();
-                Console.WriteLine("Web server started...");
-
-                while (true)
-                {
-                    var context = await _listener.GetContextAsync();
-                    _ = ProcessRequestAsync(new HttpContext(context));
-                }
-            }
-
-            private async Task ProcessRequestAsync(HttpContext context)
-            {
-                string path = context.Request.Url.AbsolutePath;
-
-                if (_routes.TryGetValue(path, out var handler))
-                {
-                    await handler(context);
-                }
-                else
-                {
-                    context.Response.StatusCode = 404;
-                    await context.Response.WriteAsync("404 Not Found");
-                }
-            }
-
-            public void Stop()
-            {
-                _listener.Stop();
-            }
-        }
-
-        // Encapsulates request and response
-        public class HttpContext
+        public WebServer(string prefix)
         {
-            public HttpRequest Request { get; }
-            public HttpResponse Response { get; }
+            _listener.Prefixes.Add(prefix);
+        }
 
-            public HttpContext(HttpListenerContext context)
+        // Register a route
+        public void MapRoute(string route, Func<HttpContext, Task> handler)
+        {
+            _routes.Add(new Route(route, handler));
+        }
+
+        // Add middleware to the pipeline
+        public void Use(Func<RequestDelegate, RequestDelegate> middleware)
+        {
+            _middlewares.Add(middleware);
+        }
+
+        // Start the server
+        public async Task StartAsync()
+        {
+            var finalHandler = BuildMiddlewarePipeline(ProcessRequestAsync);
+
+            _listener.Start();
+            Console.WriteLine("Web server started...");
+
+            while (true)
             {
-                Request = new HttpRequest(context.Request);
-                Response = new HttpResponse(context.Response);
+                var context = await _listener.GetContextAsync();
+                var httpContext = new HttpContext(context);
+                _ = finalHandler(httpContext);
             }
         }
 
-        // Handles incoming request
+        // Middleware pipeline
+        private RequestDelegate BuildMiddlewarePipeline(RequestDelegate finalHandler)
+        {
+            RequestDelegate pipeline = finalHandler;
+
+            for (int i = _middlewares.Count - 1; i >= 0; i--)
+            {
+                pipeline = _middlewares[i](pipeline);
+            }
+
+            return pipeline;
+        }
+
+        // Process requests and handle routing
+        private async Task ProcessRequestAsync(HttpContext context)
+        {
+            string path = context.Request.Url.AbsolutePath;
+
+            foreach (var route in _routes)
+            {
+                var match = route.Match(path);
+                if (match.Success)
+                {
+                    // Pass matched parameters to the handler
+                    context.Request.RouteParameters = match.Parameters;
+                    await route.Handler(context);
+                    return;
+                }
+            }
+
+            context.Response.StatusCode = 404;
+            await context.Response.WriteAsync("404 Not Found");
+        }
+
+        public void Stop()
+        {
+            _listener.Stop();
+        }
+    }
         public class HttpRequest
         {
             private readonly HttpListenerRequest _request;
@@ -1398,8 +1417,6 @@ namespace JSCSH
                 return await reader.ReadToEndAsync();
             }
         }
-
-        // Handles outgoing response
         public class HttpResponse
         {
             private readonly HttpListenerResponse _response;
@@ -1452,8 +1469,8 @@ namespace JSCSH
             }
         },
         public delegate Task RequestDelegate(HttpContext context);
-
-    public class HttpContext
+        
+        public class HttpContext
     {
         public HttpRequest Request { get; }
         public HttpResponse Response { get; }
@@ -1464,49 +1481,133 @@ namespace JSCSH
             Response = new HttpResponse(context.Response);
         }
     }
-
-    public class HttpRequest
-    {
-        private readonly HttpListenerRequest _request;
-
-        public HttpRequest(HttpListenerRequest request)
+        public class Route
         {
-            _request = request;
+            private readonly Regex _regex;
+            private readonly List<string> _parameterNames;
+
+            public Func<HttpContext, Task> Handler { get; }
+
+            public Route(string template, Func<HttpContext, Task> handler)
+            {
+                Handler = handler;
+                (_regex, _parameterNames) = ParseTemplate(template);
+            }
+
+            private static (Regex, List<string>) ParseTemplate(string template)
+            {
+                var parameterNames = new List<string>();
+                var pattern = "^" + Regex.Replace(template, @"\{(\w+)\}", match =>
+                {
+                    parameterNames.Add(match.Groups[1].Value);
+                    return @"(?<" + match.Groups[1].Value + @">[^/]+)";
+                }) + "$";
+
+                return (new Regex(pattern, RegexOptions.Compiled), parameterNames);
+            }
+
+            public (bool Success, Dictionary<string, string> Parameters) Match(string path)
+            {
+                var match = _regex.Match(path);
+                if (!match.Success) return (false, new Dictionary<string, string>());
+
+                var parameters = _parameterNames.ToDictionary(name => name, name => match.Groups[name].Value);
+                return (true, parameters);
+            }
         }
-
-        public Uri Url => _request.Url;
-        public string HttpMethod => _request.HttpMethod;
-
-        public async Task<string> ReadBodyAsync()
+        public static class SessionManager
         {
-            using var reader = new StreamReader(_request.InputStream, _request.ContentEncoding);
-            return await reader.ReadToEndAsync();
-        }
-    }
+            private static readonly ConcurrentDictionary<string, Session> _sessions = new();
+            private const string SessionCookieName = "SESSION_ID";
 
-    public class HttpResponse
-    {
-        private readonly HttpListenerResponse _response;
+            public static Session GetSession(HttpRequest request, HttpResponse response)
+            {
+                string sessionId = request.Cookies[SessionCookieName]?.Value;
 
-        public HttpResponse(HttpListenerResponse response)
+                if (string.IsNullOrEmpty(sessionId) || !_sessions.ContainsKey(sessionId))
+                {
+                    sessionId = Guid.NewGuid().ToString();
+                    response.SetCookie(new Cookie(SessionCookieName, sessionId) { HttpOnly = true });
+                    _sessions[sessionId] = new Session(sessionId);
+                }
+
+                return _sessions[sessionId];
+            }
+        },
+        public class Session
         {
-            _response = response;
-        }
+            public string Id { get; }
+            private readonly Dictionary<string, object> _data = new();
 
-        public int StatusCode
-        {
-            get => _response.StatusCode;
-            set => _response.StatusCode = value;
-        }
+            public Session(string id)
+            {
+                Id = id;
+            }
 
-        public async Task WriteAsync(string content, string contentType = "text/plain")
+            public void Set(string key, object value)
+            {
+                _data[key] = value;
+            }
+
+            public object? Get(string key)
+            {
+                return _data.TryGetValue(key, out var value) ? value : null;
+            }
+
+            public void Remove(string key)
+            {
+                _data.Remove(key);
+            }
+
+            public void Clear()
+            {
+                _data.Clear();
+            }
+        },
+        public CookieCollection Cookies => _request.Cookies;
+        public void SetCookie(Cookie cookie)
         {
-            _response.ContentType = contentType;
-            byte[] buffer = Encoding.UTF8.GetBytes(content);
-            _response.ContentLength64 = buffer.Length;
-            using var output = _response.OutputStream;
-            await output.WriteAsync(buffer, 0, buffer.Length);
+            _response.SetCookie(cookie);
         }
-    }
+        public Session Session { get; }
+        public HttpContext(HttpListenerContext context)
+        {
+            Request = new HttpRequest(context.Request);
+            Response = new HttpResponse(context.Response);
+            Session = SessionManager.GetSession(Request, Response);
+        }
+        public static class DatabaseService
+            {
+                private static DbContextOptions<AppDbContext>? _dbContextOptions;
+
+                public static void Initialize(DbContextOptions<AppDbContext> options)
+                {
+                    _dbContextOptions = options;
+                }
+
+                public static AppDbContext GetContext()
+                {
+                    if (_dbContextOptions == null)
+                    {
+                        throw new InvalidOperationException("DatabaseService is not initialized.");
+                    }
+                    return new AppDbContext(_dbContextOptions);
+                }
+            }
+
+        public class AppDbContext : DbContext
+            {
+                public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
+                // Example: Add DbSets for tables
+                public DbSet<User> Users { get; set; }
+            }
+        public class User
+            {
+                public int Id { get; set; }
+                public string Name { get; set; }
+                public string Email { get; set; }
+            }
+
     }
 }
