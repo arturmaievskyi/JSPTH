@@ -17,6 +17,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace JSCSH
 {
@@ -383,8 +388,8 @@ namespace JSCSH
     }
     }
     namespace MathUtilities
-{
-        public static class MathOperations
+    {
+            public static class MathOperations
         {
             // Adds two numbers
             public static double Add(double a, double b)
@@ -710,439 +715,471 @@ namespace JSCSH
         }
     }
     namespace Crypto
-{
-    public static class CryptoUtils
     {
-        // Hashing with SHA256
-        public static string ComputeSHA256Hash(string input)
+        public static class CryptoUtils
         {
-            using (SHA256 sha256 = SHA256.Create())
+            // Hashing with SHA256
+            public static string ComputeSHA256Hash(string input)
             {
-                byte[] bytes = Encoding.UTF8.GetBytes(input);
-                byte[] hash = sha256.ComputeHash(bytes);
-                return Convert.ToHexString(hash);
-            }
-        }
-
-        // Symmetric encryption with AES
-        public static (byte[] EncryptedData, byte[] Key, byte[] IV) EncryptAES(string plainText)
-        {
-            using (Aes aes = Aes.Create())
-            {
-                aes.GenerateKey();
-                aes.GenerateIV();
-
-                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
-                using (var ms = new System.IO.MemoryStream())
+                using (SHA256 sha256 = SHA256.Create())
                 {
-                    using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-                    {
-                        byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-                        cs.Write(plainBytes, 0, plainBytes.Length);
-                    }
-                    return (ms.ToArray(), aes.Key, aes.IV);
+                    byte[] bytes = Encoding.UTF8.GetBytes(input);
+                    byte[] hash = sha256.ComputeHash(bytes);
+                    return Convert.ToHexString(hash);
                 }
             }
-        }
 
-        // Symmetric decryption with AES
-        public static string DecryptAES(byte[] encryptedData, byte[] key, byte[] iv)
-        {
-            using (Aes aes = Aes.Create())
+            // Symmetric encryption with AES
+            public static (byte[] EncryptedData, byte[] Key, byte[] IV) EncryptAES(string plainText)
             {
-                aes.Key = key;
-                aes.IV = iv;
-
-                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-
-                using (var ms = new System.IO.MemoryStream(encryptedData))
+                using (Aes aes = Aes.Create())
                 {
-                    using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                    aes.GenerateKey();
+                    aes.GenerateIV();
+
+                    ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                    using (var ms = new System.IO.MemoryStream())
                     {
-                        using (var sr = new System.IO.StreamReader(cs))
+                        using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
                         {
-                            return sr.ReadToEnd();
+                            byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+                            cs.Write(plainBytes, 0, plainBytes.Length);
+                        }
+                        return (ms.ToArray(), aes.Key, aes.IV);
+                    }
+                }
+            }
+
+            // Symmetric decryption with AES
+            public static string DecryptAES(byte[] encryptedData, byte[] key, byte[] iv)
+            {
+                using (Aes aes = Aes.Create())
+                {
+                    aes.Key = key;
+                    aes.IV = iv;
+
+                    ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+                    using (var ms = new System.IO.MemoryStream(encryptedData))
+                    {
+                        using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                        {
+                            using (var sr = new System.IO.StreamReader(cs))
+                            {
+                                return sr.ReadToEnd();
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // RSA key pair generation
-        public static (string PublicKey, string PrivateKey) GenerateRSAKeys()
-        {
-            using (RSA rsa = RSA.Create())
+            // RSA key pair generation
+            public static (string PublicKey, string PrivateKey) GenerateRSAKeys()
             {
-                rsa.KeySize = 2048;
-                string publicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
-                string privateKey = Convert.ToBase64String(rsa.ExportPkcs8PrivateKey());
-                return (publicKey, privateKey);
-            }
-        }
-
-        // RSA encryption
-        public static byte[] EncryptRSA(string plainText, string publicKeyBase64)
-        {
-            byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-            using (RSA rsa = RSA.Create())
-            {
-                rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(publicKeyBase64), out _);
-                return rsa.Encrypt(plainBytes, RSAEncryptionPadding.OaepSHA256);
-            }
-        }
-
-        // RSA decryption
-        public static string DecryptRSA(byte[] encryptedData, string privateKeyBase64)
-        {
-            using (RSA rsa = RSA.Create())
-            {
-                rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(privateKeyBase64), out _);
-                byte[] decryptedBytes = rsa.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA256);
-                return Encoding.UTF8.GetString(decryptedBytes);
-            }
-        }
-
-        // HMAC-SHA256
-        public static string ComputeHMACSHA256(string input, string key)
-        {
-            using (HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
-            {
-                byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(input));
-                return Convert.ToHexString(hash);
-            }
-        }
-    
-            public static string ComputeSHA512Hash(string input)
-        {
-            using (SHA512 sha512 = SHA512.Create())
-            {
-                byte[] bytes = Encoding.UTF8.GetBytes(input);
-                byte[] hash = sha512.ComputeHash(bytes);
-                return Convert.ToHexString(hash);
-            }
-        }
-
-        // Key Derivation using PBKDF2
-        public static byte[] DeriveKeyPBKDF2(string password, byte[] salt, int iterations, int keySize)
-        {
-            using (var rfc2898 = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA256))
-            {
-                return rfc2898.GetBytes(keySize);
-            }
-        }
-
-        // Digital Signature with ECDSA
-        public static (string PublicKey, string PrivateKey) GenerateECDSAKeys()
-        {
-            using (ECDsa ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256))
-            {
-                string publicKey = Convert.ToBase64String(ecdsa.ExportSubjectPublicKeyInfo());
-                string privateKey = Convert.ToBase64String(ecdsa.ExportPkcs8PrivateKey());
-                return (publicKey, privateKey);
-            }
-        }
-
-        public static byte[] SignDataECDSA(string data, string privateKeyBase64)
-        {
-            using (ECDsa ecdsa = ECDsa.Create())
-            {
-                ecdsa.ImportPkcs8PrivateKey(Convert.FromBase64String(privateKeyBase64), out _);
-                byte[] dataBytes = Encoding.UTF8.GetBytes(data);
-                return ecdsa.SignData(dataBytes, HashAlgorithmName.SHA256);
-            }
-        }
-
-        public static bool VerifySignatureECDSA(string data, byte[] signature, string publicKeyBase64)
-        {
-            using (ECDsa ecdsa = ECDsa.Create())
-            {
-                ecdsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(publicKeyBase64), out _);
-                byte[] dataBytes = Encoding.UTF8.GetBytes(data);
-                return ecdsa.VerifyData(dataBytes, signature, HashAlgorithmName.SHA256);
-            }
-        }
-
-        // Symmetric Encryption with ChaCha20 (using BouncyCastle)
-        public static byte[] EncryptChaCha20(string plainText, byte[] key, byte[] nonce)
-        {
-            if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for ChaCha20.");
-            if (nonce.Length != 12) throw new ArgumentException("Nonce must be 12 bytes for ChaCha20.");
-
-            var plaintextBytes = Encoding.UTF8.GetBytes(plainText);
-            byte[] ciphertext = new byte[plaintextBytes.Length];
-
-            using (var cipher = new Org.BouncyCastle.Crypto.Engines.ChaChaEngine())
-            {
-                cipher.Init(true, new Org.BouncyCastle.Crypto.Parameters.ParametersWithIV(
-                    new Org.BouncyCastle.Crypto.Parameters.KeyParameter(key), nonce));
-                cipher.ProcessBytes(plaintextBytes, 0, plaintextBytes.Length, ciphertext, 0);
-            }
-
-            return ciphertext;
-        }
-
-        public static string DecryptChaCha20(byte[] encryptedData, byte[] key, byte[] nonce)
-        {
-            if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for ChaCha20.");
-            if (nonce.Length != 12) throw new ArgumentException("Nonce must be 12 bytes for ChaCha20.");
-
-            byte[] plaintext = new byte[encryptedData.Length];
-
-            using (var cipher = new Org.BouncyCastle.Crypto.Engines.ChaChaEngine())
-            {
-                cipher.Init(false, new Org.BouncyCastle.Crypto.Parameters.ParametersWithIV(
-                    new Org.BouncyCastle.Crypto.Parameters.KeyParameter(key), nonce));
-                cipher.ProcessBytes(encryptedData, 0, encryptedData.Length, plaintext, 0);
-            }
-
-            return Encoding.UTF8.GetString(plaintext);
-        }
-    },
-    public static class StreamCipherUtils
-    {
-        public static byte[] EncryptSalsa20(string plainText, byte[] key, byte[] nonce)
-        {
-            if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for Salsa20.");
-            if (nonce.Length != 8) throw new ArgumentException("Nonce must be 8 bytes for Salsa20.");
-
-            byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-            byte[] encrypted = new byte[plainBytes.Length];
-
-            Salsa20Engine engine = new Salsa20Engine();
-            engine.Init(true, new ParametersWithIV(new KeyParameter(key), nonce));
-            engine.ProcessBytes(plainBytes, 0, plainBytes.Length, encrypted, 0);
-
-            return encrypted;
-        }
-
-        public static string DecryptSalsa20(byte[] encryptedData, byte[] key, byte[] nonce)
-        {
-            if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for Salsa20.");
-            if (nonce.Length != 8) throw new ArgumentException("Nonce must be 8 bytes for Salsa20.");
-
-            byte[] decrypted = new byte[encryptedData.Length];
-
-            Salsa20Engine engine = new Salsa20Engine();
-            engine.Init(false, new ParametersWithIV(new KeyParameter(key), nonce));
-            engine.ProcessBytes(encryptedData, 0, encryptedData.Length, decrypted, 0);
-
-            return Encoding.UTF8.GetString(decrypted);
-        }
-    },
-    public static class KeyExchangeUtils
-    {
-        public static (byte[] PublicKey, byte[] PrivateKey) GenerateDHKeys()
-        {
-            using (ECDiffieHellman dh = ECDiffieHellman.Create())
-            {
-                return (dh.PublicKey.ToByteArray(), dh.ExportPkcs8PrivateKey());
-            }
-        }
-
-        public static byte[] DeriveSharedSecret(byte[] publicKey, byte[] privateKey)
-        {
-            using (ECDiffieHellman dh = ECDiffieHellman.Create())
-            {
-                dh.ImportPkcs8PrivateKey(privateKey, out _);
-                using (ECDiffieHellmanPublicKey otherPublicKey = ECDiffieHellman.Create().PublicKey)
+                using (RSA rsa = RSA.Create())
                 {
-                    otherPublicKey.Import(publicKey);
-                    return dh.DeriveKeyMaterial(otherPublicKey);
+                    rsa.KeySize = 2048;
+                    string publicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
+                    string privateKey = Convert.ToBase64String(rsa.ExportPkcs8PrivateKey());
+                    return (publicKey, privateKey);
+                }
+            }
+
+            // RSA encryption
+            public static byte[] EncryptRSA(string plainText, string publicKeyBase64)
+            {
+                byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+                using (RSA rsa = RSA.Create())
+                {
+                    rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(publicKeyBase64), out _);
+                    return rsa.Encrypt(plainBytes, RSAEncryptionPadding.OaepSHA256);
+                }
+            }
+
+            // RSA decryption
+            public static string DecryptRSA(byte[] encryptedData, string privateKeyBase64)
+            {
+                using (RSA rsa = RSA.Create())
+                {
+                    rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(privateKeyBase64), out _);
+                    byte[] decryptedBytes = rsa.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA256);
+                    return Encoding.UTF8.GetString(decryptedBytes);
+                }
+            }
+
+            // HMAC-SHA256
+            public static string ComputeHMACSHA256(string input, string key)
+            {
+                using (HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+                {
+                    byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(input));
+                    return Convert.ToHexString(hash);
+                }
+            }
+        
+                public static string ComputeSHA512Hash(string input)
+            {
+                using (SHA512 sha512 = SHA512.Create())
+                {
+                    byte[] bytes = Encoding.UTF8.GetBytes(input);
+                    byte[] hash = sha512.ComputeHash(bytes);
+                    return Convert.ToHexString(hash);
+                }
+            }
+
+            // Key Derivation using PBKDF2
+            public static byte[] DeriveKeyPBKDF2(string password, byte[] salt, int iterations, int keySize)
+            {
+                using (var rfc2898 = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA256))
+                {
+                    return rfc2898.GetBytes(keySize);
+                }
+            }
+
+            // Digital Signature with ECDSA
+            public static (string PublicKey, string PrivateKey) GenerateECDSAKeys()
+            {
+                using (ECDsa ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256))
+                {
+                    string publicKey = Convert.ToBase64String(ecdsa.ExportSubjectPublicKeyInfo());
+                    string privateKey = Convert.ToBase64String(ecdsa.ExportPkcs8PrivateKey());
+                    return (publicKey, privateKey);
+                }
+            }
+
+            public static byte[] SignDataECDSA(string data, string privateKeyBase64)
+            {
+                using (ECDsa ecdsa = ECDsa.Create())
+                {
+                    ecdsa.ImportPkcs8PrivateKey(Convert.FromBase64String(privateKeyBase64), out _);
+                    byte[] dataBytes = Encoding.UTF8.GetBytes(data);
+                    return ecdsa.SignData(dataBytes, HashAlgorithmName.SHA256);
+                }
+            }
+
+            public static bool VerifySignatureECDSA(string data, byte[] signature, string publicKeyBase64)
+            {
+                using (ECDsa ecdsa = ECDsa.Create())
+                {
+                    ecdsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(publicKeyBase64), out _);
+                    byte[] dataBytes = Encoding.UTF8.GetBytes(data);
+                    return ecdsa.VerifyData(dataBytes, signature, HashAlgorithmName.SHA256);
+                }
+            }
+
+            // Symmetric Encryption with ChaCha20 (using BouncyCastle)
+            public static byte[] EncryptChaCha20(string plainText, byte[] key, byte[] nonce)
+            {
+                if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for ChaCha20.");
+                if (nonce.Length != 12) throw new ArgumentException("Nonce must be 12 bytes for ChaCha20.");
+
+                var plaintextBytes = Encoding.UTF8.GetBytes(plainText);
+                byte[] ciphertext = new byte[plaintextBytes.Length];
+
+                using (var cipher = new Org.BouncyCastle.Crypto.Engines.ChaChaEngine())
+                {
+                    cipher.Init(true, new Org.BouncyCastle.Crypto.Parameters.ParametersWithIV(
+                        new Org.BouncyCastle.Crypto.Parameters.KeyParameter(key), nonce));
+                    cipher.ProcessBytes(plaintextBytes, 0, plaintextBytes.Length, ciphertext, 0);
+                }
+
+                return ciphertext;
+            }
+
+            public static string DecryptChaCha20(byte[] encryptedData, byte[] key, byte[] nonce)
+            {
+                if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for ChaCha20.");
+                if (nonce.Length != 12) throw new ArgumentException("Nonce must be 12 bytes for ChaCha20.");
+
+                byte[] plaintext = new byte[encryptedData.Length];
+
+                using (var cipher = new Org.BouncyCastle.Crypto.Engines.ChaChaEngine())
+                {
+                    cipher.Init(false, new Org.BouncyCastle.Crypto.Parameters.ParametersWithIV(
+                        new Org.BouncyCastle.Crypto.Parameters.KeyParameter(key), nonce));
+                    cipher.ProcessBytes(encryptedData, 0, encryptedData.Length, plaintext, 0);
+                }
+
+                return Encoding.UTF8.GetString(plaintext);
+            }
+        },
+        public static class StreamCipherUtils
+        {
+            public static byte[] EncryptSalsa20(string plainText, byte[] key, byte[] nonce)
+            {
+                if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for Salsa20.");
+                if (nonce.Length != 8) throw new ArgumentException("Nonce must be 8 bytes for Salsa20.");
+
+                byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+                byte[] encrypted = new byte[plainBytes.Length];
+
+                Salsa20Engine engine = new Salsa20Engine();
+                engine.Init(true, new ParametersWithIV(new KeyParameter(key), nonce));
+                engine.ProcessBytes(plainBytes, 0, plainBytes.Length, encrypted, 0);
+
+                return encrypted;
+            }
+
+            public static string DecryptSalsa20(byte[] encryptedData, byte[] key, byte[] nonce)
+            {
+                if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for Salsa20.");
+                if (nonce.Length != 8) throw new ArgumentException("Nonce must be 8 bytes for Salsa20.");
+
+                byte[] decrypted = new byte[encryptedData.Length];
+
+                Salsa20Engine engine = new Salsa20Engine();
+                engine.Init(false, new ParametersWithIV(new KeyParameter(key), nonce));
+                engine.ProcessBytes(encryptedData, 0, encryptedData.Length, decrypted, 0);
+
+                return Encoding.UTF8.GetString(decrypted);
+            }
+        },
+        public static class KeyExchangeUtils
+        {
+            public static (byte[] PublicKey, byte[] PrivateKey) GenerateDHKeys()
+            {
+                using (ECDiffieHellman dh = ECDiffieHellman.Create())
+                {
+                    return (dh.PublicKey.ToByteArray(), dh.ExportPkcs8PrivateKey());
+                }
+            }
+
+            public static byte[] DeriveSharedSecret(byte[] publicKey, byte[] privateKey)
+            {
+                using (ECDiffieHellman dh = ECDiffieHellman.Create())
+                {
+                    dh.ImportPkcs8PrivateKey(privateKey, out _);
+                    using (ECDiffieHellmanPublicKey otherPublicKey = ECDiffieHellman.Create().PublicKey)
+                    {
+                        otherPublicKey.Import(publicKey);
+                        return dh.DeriveKeyMaterial(otherPublicKey);
+                    }
+                }
+            }
+        },
+        public static class KeyStorageUtils
+        {
+            public static byte[] ProtectKey(byte[] key)
+            {
+                return ProtectedData.Protect(key, null, DataProtectionScope.CurrentUser);
+            }
+
+            public static byte[] UnprotectKey(byte[] protectedKey)
+            {
+                return ProtectedData.Unprotect(protectedKey, null, DataProtectionScope.CurrentUser);
+            }
+        },
+        public static class JwtUtils
+        {
+            public static string GenerateJwt(string secretKey, string issuer, string audience, int expirationMinutes)
+            {
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                var token = new JwtSecurityToken(
+                    issuer,
+                    audience,
+                    expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
+                    signingCredentials: creds);
+
+                return new JwtSecurityTokenHandler().WriteToken(token);
+            }
+
+            public static ClaimsPrincipal ValidateJwt(string token, string secretKey, string issuer, string audience)
+            {
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+                    IssuerSigningKey = key
+                };
+
+                return tokenHandler.ValidateToken(token, validationParameters, out _);
+            }
+        }
+        public static class HsmUtils
+        {
+            public static void StoreSecret(string vaultUrl, string secretName, string secretValue)
+            {
+                var client = new SecretClient(new Uri(vaultUrl), new DefaultAzureCredential());
+                client.SetSecret(secretName, secretValue);
+            }
+
+            public static string RetrieveSecret(string vaultUrl, string secretName)
+            {
+                var client = new SecretClient(new Uri(vaultUrl), new DefaultAzureCredential());
+                return client.GetSecret(secretName).Value.Value;
+            }
+        }
+        public static class Argon2Utils
+        {
+            public static byte[] DeriveKeyArgon2(string password, byte[] salt, int memorySize = 65536, int iterations = 3, int parallelism = 2, int keySize = 32)
+            {
+                using (var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password)))
+                {
+                    argon2.Salt = salt;
+                    argon2.MemorySize = memorySize; // Memory in KB
+                    argon2.Iterations = iterations;
+                    argon2.DegreeOfParallelism = parallelism;
+
+                    return argon2.GetBytes(keySize); // Returns the derived key
                 }
             }
         }
-    },
-    public static class KeyStorageUtils
-    {
-        public static byte[] ProtectKey(byte[] key)
+        public static class AwsKmsUtils
         {
-            return ProtectedData.Protect(key, null, DataProtectionScope.CurrentUser);
-        }
+            private static AmazonKeyManagementServiceClient _kmsClient = new AmazonKeyManagementServiceClient();
 
-        public static byte[] UnprotectKey(byte[] protectedKey)
-        {
-            return ProtectedData.Unprotect(protectedKey, null, DataProtectionScope.CurrentUser);
-        }
-    },
-    public static class JwtUtils
-    {
-        public static string GenerateJwt(string secretKey, string issuer, string audience, int expirationMinutes)
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer,
-                audience,
-                expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        public static ClaimsPrincipal ValidateJwt(string token, string secretKey, string issuer, string audience)
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            var validationParameters = new TokenValidationParameters
+            public static string EncryptWithKms(string keyId, string plaintext)
             {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = issuer,
-                ValidAudience = audience,
-                IssuerSigningKey = key
-            };
+                var request = new EncryptRequest
+                {
+                    KeyId = keyId,
+                    Plaintext = new MemoryStream(Encoding.UTF8.GetBytes(plaintext))
+                };
 
-            return tokenHandler.ValidateToken(token, validationParameters, out _);
-        }
-    }
-    public static class HsmUtils
-    {
-        public static void StoreSecret(string vaultUrl, string secretName, string secretValue)
-        {
-            var client = new SecretClient(new Uri(vaultUrl), new DefaultAzureCredential());
-            client.SetSecret(secretName, secretValue);
-        }
+                var response = _kmsClient.EncryptAsync(request).Result;
+                return Convert.ToBase64String(response.CiphertextBlob.ToArray());
+            }
 
-        public static string RetrieveSecret(string vaultUrl, string secretName)
-        {
-            var client = new SecretClient(new Uri(vaultUrl), new DefaultAzureCredential());
-            return client.GetSecret(secretName).Value.Value;
-        }
-    }
-    public static class Argon2Utils
-    {
-        public static byte[] DeriveKeyArgon2(string password, byte[] salt, int memorySize = 65536, int iterations = 3, int parallelism = 2, int keySize = 32)
-        {
-            using (var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password)))
+            public static string DecryptWithKms(string ciphertextBase64)
             {
-                argon2.Salt = salt;
-                argon2.MemorySize = memorySize; // Memory in KB
-                argon2.Iterations = iterations;
-                argon2.DegreeOfParallelism = parallelism;
+                var request = new DecryptRequest
+                {
+                    CiphertextBlob = new MemoryStream(Convert.FromBase64String(ciphertextBase64))
+                };
 
-                return argon2.GetBytes(keySize); // Returns the derived key
+                var response = _kmsClient.DecryptAsync(request).Result;
+                return Encoding.UTF8.GetString(response.Plaintext.ToArray());
             }
         }
-    }
-    public static class AwsKmsUtils
-    {
-        private static AmazonKeyManagementServiceClient _kmsClient = new AmazonKeyManagementServiceClient();
-
-        public static string EncryptWithKms(string keyId, string plaintext)
+        public static class ChaCha20Poly1305Utils
         {
-            var request = new EncryptRequest
+            public static byte[] EncryptChaCha20Poly1305(string plainText, byte[] key, byte[] nonce, byte[] associatedData)
             {
-                KeyId = keyId,
-                Plaintext = new MemoryStream(Encoding.UTF8.GetBytes(plaintext))
-            };
+                if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for ChaCha20-Poly1305.");
+                if (nonce.Length != 12) throw new ArgumentException("Nonce must be 12 bytes for ChaCha20-Poly1305.");
 
-            var response = _kmsClient.EncryptAsync(request).Result;
-            return Convert.ToBase64String(response.CiphertextBlob.ToArray());
-        }
+                var plaintextBytes = Encoding.UTF8.GetBytes(plainText);
+                var ciphertext = new byte[plaintextBytes.Length + 16]; // +16 for authentication tag
 
-        public static string DecryptWithKms(string ciphertextBase64)
-        {
-            var request = new DecryptRequest
+                var cipher = new ChaCha20Poly1305();
+                cipher.Init(true, new ParametersWithIV(new KeyParameter(key), nonce));
+                cipher.ProcessAADBytes(associatedData, 0, associatedData.Length);
+                cipher.ProcessBytes(plaintextBytes, 0, plaintextBytes.Length, ciphertext, 0);
+                cipher.DoFinal(ciphertext, plaintextBytes.Length);
+
+                return ciphertext;
+            }
+
+            public static string DecryptChaCha20Poly1305(byte[] ciphertext, byte[] key, byte[] nonce, byte[] associatedData)
             {
-                CiphertextBlob = new MemoryStream(Convert.FromBase64String(ciphertextBase64))
-            };
+                if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for ChaCha20-Poly1305.");
+                if (nonce.Length != 12) throw new ArgumentException("Nonce must be 12 bytes for ChaCha20-Poly1305.");
 
-            var response = _kmsClient.DecryptAsync(request).Result;
-            return Encoding.UTF8.GetString(response.Plaintext.ToArray());
-        }
-    }
-    public static class ChaCha20Poly1305Utils
-    {
-        public static byte[] EncryptChaCha20Poly1305(string plainText, byte[] key, byte[] nonce, byte[] associatedData)
-        {
-            if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for ChaCha20-Poly1305.");
-            if (nonce.Length != 12) throw new ArgumentException("Nonce must be 12 bytes for ChaCha20-Poly1305.");
+                var plaintext = new byte[ciphertext.Length - 16]; // -16 for authentication tag
 
-            var plaintextBytes = Encoding.UTF8.GetBytes(plainText);
-            var ciphertext = new byte[plaintextBytes.Length + 16]; // +16 for authentication tag
+                var cipher = new ChaCha20Poly1305();
+                cipher.Init(false, new ParametersWithIV(new KeyParameter(key), nonce));
+                cipher.ProcessAADBytes(associatedData, 0, associatedData.Length);
+                cipher.ProcessBytes(ciphertext, 0, ciphertext.Length - 16, plaintext, 0);
+                cipher.DoFinal(ciphertext, ciphertext.Length - 16);
 
-            var cipher = new ChaCha20Poly1305();
-            cipher.Init(true, new ParametersWithIV(new KeyParameter(key), nonce));
-            cipher.ProcessAADBytes(associatedData, 0, associatedData.Length);
-            cipher.ProcessBytes(plaintextBytes, 0, plaintextBytes.Length, ciphertext, 0);
-            cipher.DoFinal(ciphertext, plaintextBytes.Length);
-
-            return ciphertext;
-        }
-
-        public static string DecryptChaCha20Poly1305(byte[] ciphertext, byte[] key, byte[] nonce, byte[] associatedData)
-        {
-            if (key.Length != 32) throw new ArgumentException("Key must be 32 bytes for ChaCha20-Poly1305.");
-            if (nonce.Length != 12) throw new ArgumentException("Nonce must be 12 bytes for ChaCha20-Poly1305.");
-
-            var plaintext = new byte[ciphertext.Length - 16]; // -16 for authentication tag
-
-            var cipher = new ChaCha20Poly1305();
-            cipher.Init(false, new ParametersWithIV(new KeyParameter(key), nonce));
-            cipher.ProcessAADBytes(associatedData, 0, associatedData.Length);
-            cipher.ProcessBytes(ciphertext, 0, ciphertext.Length - 16, plaintext, 0);
-            cipher.DoFinal(ciphertext, ciphertext.Length - 16);
-
-            return Encoding.UTF8.GetString(plaintext);
-        }
-    }
-    public static class ScryptUtils
-    {
-        public static byte[] DeriveKeyScrypt(string password, byte[] salt, int memoryCost = 16384, int iterations = 8, int parallelism = 1, int keySize = 32)
-        {
-            using (var scrypt = new Scrypt())
-            {
-                scrypt.Password = Encoding.UTF8.GetBytes(password);
-                scrypt.Salt = salt;
-                scrypt.N = memoryCost; // CPU/memory cost
-                scrypt.R = iterations; // Block size
-                scrypt.P = parallelism; // Parallelization
-                return scrypt.GetBytes(keySize);
+                return Encoding.UTF8.GetString(plaintext);
             }
         }
-    }
-    public static class Pbkdf2Utils
-    {
-        public static byte[] DeriveKeyPBKDF2_SHA512(string password, byte[] salt, int iterations, int keySize)
+        public static class ScryptUtils
         {
-            using (var rfc2898 = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA512))
+            public static byte[] DeriveKeyScrypt(string password, byte[] salt, int memoryCost = 16384, int iterations = 8, int parallelism = 1, int keySize = 32)
             {
-                return rfc2898.GetBytes(keySize);
+                using (var scrypt = new Scrypt())
+                {
+                    scrypt.Password = Encoding.UTF8.GetBytes(password);
+                    scrypt.Salt = salt;
+                    scrypt.N = memoryCost; // CPU/memory cost
+                    scrypt.R = iterations; // Block size
+                    scrypt.P = parallelism; // Parallelization
+                    return scrypt.GetBytes(keySize);
+                }
             }
         }
-    }
-    public static class TlsServer
-    {
-        public static void StartServer(string certificatePath, string certificatePassword, int port = 5000)
+        public static class Pbkdf2Utils
         {
-            X509Certificate2 serverCertificate = new X509Certificate2(certificatePath, certificatePassword);
-
-            TcpListener listener = new TcpListener(IPAddress.Any, port);
-            listener.Start();
-
-            Console.WriteLine($"TLS Server started on port {port}...");
-            while (true)
+            public static byte[] DeriveKeyPBKDF2_SHA512(string password, byte[] salt, int iterations, int keySize)
             {
-                TcpClient client = listener.AcceptTcpClient();
-                SslStream sslStream = new SslStream(client.GetStream(), false);
+                using (var rfc2898 = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA512))
+                {
+                    return rfc2898.GetBytes(keySize);
+                }
+            }
+        }
+        public static class TlsServer
+        {
+            public static void StartServer(string certificatePath, string certificatePassword, int port = 5000)
+            {
+                X509Certificate2 serverCertificate = new X509Certificate2(certificatePath, certificatePassword);
+
+                TcpListener listener = new TcpListener(IPAddress.Any, port);
+                listener.Start();
+
+                Console.WriteLine($"TLS Server started on port {port}...");
+                while (true)
+                {
+                    TcpClient client = listener.AcceptTcpClient();
+                    SslStream sslStream = new SslStream(client.GetStream(), false);
+
+                    try
+                    {
+                        sslStream.AuthenticateAsServer(serverCertificate, false, System.Security.Authentication.SslProtocols.Tls12, true);
+
+                        byte[] buffer = new byte[1024];
+                        int bytesRead = sslStream.Read(buffer, 0, buffer.Length);
+
+                        string clientMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        Console.WriteLine($"Received: {clientMessage}");
+
+                        string response = "Hello from TLS Server!";
+                        sslStream.Write(Encoding.UTF8.GetBytes(response));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error: {ex.Message}");
+                    }
+                    finally
+                    {
+                        sslStream.Close();
+                        client.Close();
+                    }
+                }
+            }
+        }
+        public static class TlsClient
+        {
+            public static void StartClient(string serverAddress, int port = 5000)
+            {
+                TcpClient client = new TcpClient(serverAddress, port);
+                SslStream sslStream = new SslStream(client.GetStream(), false, (sender, cert, chain, sslPolicyErrors) => true);
 
                 try
                 {
-                    sslStream.AuthenticateAsServer(serverCertificate, false, System.Security.Authentication.SslProtocols.Tls12, true);
+                    sslStream.AuthenticateAsClient(serverAddress);
+
+                    string message = "Hello from TLS Client!";
+                    sslStream.Write(Encoding.UTF8.GetBytes(message));
 
                     byte[] buffer = new byte[1024];
                     int bytesRead = sslStream.Read(buffer, 0, buffer.Length);
 
-                    string clientMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    Console.WriteLine($"Received: {clientMessage}");
-
-                    string response = "Hello from TLS Server!";
-                    sslStream.Write(Encoding.UTF8.GetBytes(response));
+                    string serverMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    Console.WriteLine($"Received: {serverMessage}");
                 }
                 catch (Exception ex)
                 {
@@ -1155,71 +1192,77 @@ namespace JSCSH
                 }
             }
         }
-    }
-    public static class TlsClient
-    {
-        public static void StartClient(string serverAddress, int port = 5000)
+        public static class TlsMutualAuthServer
         {
-            TcpClient client = new TcpClient(serverAddress, port);
-            SslStream sslStream = new SslStream(client.GetStream(), false, (sender, cert, chain, sslPolicyErrors) => true);
-
-            try
+            public static void StartServer(string serverCertificatePath, string serverCertificatePassword, string trustedClientCAPath, int port = 5000)
             {
-                sslStream.AuthenticateAsClient(serverAddress);
+                X509Certificate2 serverCertificate = new X509Certificate2(serverCertificatePath, serverCertificatePassword);
+                X509Certificate2 trustedClientCA = new X509Certificate2(trustedClientCAPath);
 
-                string message = "Hello from TLS Client!";
-                sslStream.Write(Encoding.UTF8.GetBytes(message));
+                TcpListener listener = new TcpListener(IPAddress.Any, port);
+                listener.Start();
 
-                byte[] buffer = new byte[1024];
-                int bytesRead = sslStream.Read(buffer, 0, buffer.Length);
+                Console.WriteLine($"TLS Mutual Authentication Server started on port {port}...");
 
-                string serverMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                Console.WriteLine($"Received: {serverMessage}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
-            finally
-            {
-                sslStream.Close();
-                client.Close();
+                while (true)
+                {
+                    TcpClient client = listener.AcceptTcpClient();
+                    SslStream sslStream = new SslStream(client.GetStream(), false, (sender, certificate, chain, sslPolicyErrors) =>
+                    {
+                        // Validate client certificate
+                        return certificate != null && chain.ChainElements[chain.ChainElements.Count - 1].Certificate.Thumbprint == trustedClientCA.Thumbprint;
+                    });
+
+                    try
+                    {
+                        sslStream.AuthenticateAsServer(serverCertificate, true, System.Security.Authentication.SslProtocols.Tls12, true);
+
+                        byte[] buffer = new byte[1024];
+                        int bytesRead = sslStream.Read(buffer, 0, buffer.Length);
+
+                        string clientMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        Console.WriteLine($"Received: {clientMessage}");
+
+                        string response = "Hello from TLS Server with Mutual Authentication!";
+                        sslStream.Write(Encoding.UTF8.GetBytes(response));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error: {ex.Message}");
+                    }
+                    finally
+                    {
+                        sslStream.Close();
+                        client.Close();
+                    }
+                }
             }
         }
-    }
-    public static class TlsMutualAuthServer
-    {
-        public static void StartServer(string serverCertificatePath, string serverCertificatePassword, string trustedClientCAPath, int port = 5000)
+        public static class TlsMutualAuthClient
         {
-            X509Certificate2 serverCertificate = new X509Certificate2(serverCertificatePath, serverCertificatePassword);
-            X509Certificate2 trustedClientCA = new X509Certificate2(trustedClientCAPath);
-
-            TcpListener listener = new TcpListener(IPAddress.Any, port);
-            listener.Start();
-
-            Console.WriteLine($"TLS Mutual Authentication Server started on port {port}...");
-
-            while (true)
+            public static void StartClient(string serverAddress, int port, string clientCertificatePath, string clientCertificatePassword)
             {
-                TcpClient client = listener.AcceptTcpClient();
-                SslStream sslStream = new SslStream(client.GetStream(), false, (sender, certificate, chain, sslPolicyErrors) =>
+                X509Certificate2 clientCertificate = new X509Certificate2(clientCertificatePath, clientCertificatePassword);
+
+                TcpClient client = new TcpClient(serverAddress, port);
+                SslStream sslStream = new SslStream(client.GetStream(), false, (sender, cert, chain, errors) =>
                 {
-                    // Validate client certificate
-                    return certificate != null && chain.ChainElements[chain.ChainElements.Count - 1].Certificate.Thumbprint == trustedClientCA.Thumbprint;
+                    // Trust all server certificates for this example (can be restricted to specific thumbprints)
+                    return true;
                 });
 
                 try
                 {
-                    sslStream.AuthenticateAsServer(serverCertificate, true, System.Security.Authentication.SslProtocols.Tls12, true);
+                    sslStream.AuthenticateAsClient(serverAddress, new X509CertificateCollection { clientCertificate }, System.Security.Authentication.SslProtocols.Tls12, true);
+
+                    string message = "Hello from TLS Client with Mutual Authentication!";
+                    sslStream.Write(Encoding.UTF8.GetBytes(message));
 
                     byte[] buffer = new byte[1024];
                     int bytesRead = sslStream.Read(buffer, 0, buffer.Length);
 
-                    string clientMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    Console.WriteLine($"Received: {clientMessage}");
-
-                    string response = "Hello from TLS Server with Mutual Authentication!";
-                    sslStream.Write(Encoding.UTF8.GetBytes(response));
+                    string serverMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    Console.WriteLine($"Received: {serverMessage}");
                 }
                 catch (Exception ex)
                 {
@@ -1232,87 +1275,238 @@ namespace JSCSH
                 }
             }
         }
-    }
-    public static class TlsMutualAuthClient
-    {
-        public static void StartClient(string serverAddress, int port, string clientCertificatePath, string clientCertificatePassword)
+        public static class SessionTokenManager
         {
-            X509Certificate2 clientCertificate = new X509Certificate2(clientCertificatePath, clientCertificatePassword);
+            private static string secretKey = "supersecurekey12345"; // Store securely (e.g., environment variable)
 
-            TcpClient client = new TcpClient(serverAddress, port);
-            SslStream sslStream = new SslStream(client.GetStream(), false, (sender, cert, chain, errors) =>
+            public static string GenerateSessionToken(string userId, int expirationMinutes = 30)
             {
-                // Trust all server certificates for this example (can be restricted to specific thumbprints)
-                return true;
-            });
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+                var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            try
-            {
-                sslStream.AuthenticateAsClient(serverAddress, new X509CertificateCollection { clientCertificate }, System.Security.Authentication.SslProtocols.Tls12, true);
+                var token = new JwtSecurityToken(
+                    issuer: "example.com",
+                    audience: "example.com",
+                    claims: new[] { new Claim(ClaimTypes.NameIdentifier, userId) },
+                    expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
+                    signingCredentials: credentials);
 
-                string message = "Hello from TLS Client with Mutual Authentication!";
-                sslStream.Write(Encoding.UTF8.GetBytes(message));
-
-                byte[] buffer = new byte[1024];
-                int bytesRead = sslStream.Read(buffer, 0, buffer.Length);
-
-                string serverMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                Console.WriteLine($"Received: {serverMessage}");
+                return new JwtSecurityTokenHandler().WriteToken(token);
             }
-            catch (Exception ex)
+
+            public static ClaimsPrincipal ValidateSessionToken(string token)
             {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
-            finally
-            {
-                sslStream.Close();
-                client.Close();
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = "example.com",
+                    ValidAudience = "example.com",
+                    IssuerSigningKey = key
+                };
+
+                return tokenHandler.ValidateToken(token, validationParameters, out _);
             }
         }
-    }
-    public static class SessionTokenManager
-    {
-        private static string secretKey = "supersecurekey12345"; // Store securely (e.g., environment variable)
-
-        public static string GenerateSessionToken(string userId, int expirationMinutes = 30)
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: "example.com",
-                audience: "example.com",
-                claims: new[] { new Claim(ClaimTypes.NameIdentifier, userId) },
-                expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
-                signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        public static ClaimsPrincipal ValidateSessionToken(string token)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = "example.com",
-                ValidAudience = "example.com",
-                IssuerSigningKey = key
-            };
-
-            return tokenHandler.ValidateToken(token, validationParameters, out _);
-        }
-    }
-
-
-},
+    },
     namespace BeckEnd
     {
+        public class WebServer
+        {
+            private readonly HttpListener _listener = new HttpListener();
+            private readonly Dictionary<string, Func<HttpContext, Task>> _routes = new();
 
+            public WebServer(string prefix)
+            {
+                _listener.Prefixes.Add(prefix);
+            }
+
+            // Register routes
+            public void MapRoute(string route, Func<HttpContext, Task> handler)
+            {
+                _routes[route] = handler;
+            }
+
+            // Start the server
+            public async Task StartAsync()
+            {
+                _listener.Start();
+                Console.WriteLine("Web server started...");
+
+                while (true)
+                {
+                    var context = await _listener.GetContextAsync();
+                    _ = ProcessRequestAsync(new HttpContext(context));
+                }
+            }
+
+            private async Task ProcessRequestAsync(HttpContext context)
+            {
+                string path = context.Request.Url.AbsolutePath;
+
+                if (_routes.TryGetValue(path, out var handler))
+                {
+                    await handler(context);
+                }
+                else
+                {
+                    context.Response.StatusCode = 404;
+                    await context.Response.WriteAsync("404 Not Found");
+                }
+            }
+
+            public void Stop()
+            {
+                _listener.Stop();
+            }
+        }
+
+        // Encapsulates request and response
+        public class HttpContext
+        {
+            public HttpRequest Request { get; }
+            public HttpResponse Response { get; }
+
+            public HttpContext(HttpListenerContext context)
+            {
+                Request = new HttpRequest(context.Request);
+                Response = new HttpResponse(context.Response);
+            }
+        }
+
+        // Handles incoming request
+        public class HttpRequest
+        {
+            private readonly HttpListenerRequest _request;
+
+            public HttpRequest(HttpListenerRequest request)
+            {
+                _request = request;
+            }
+
+            public Uri Url => _request.Url;
+            public string HttpMethod => _request.HttpMethod;
+
+            public async Task<string> ReadBodyAsync()
+            {
+                using var reader = new StreamReader(_request.InputStream, _request.ContentEncoding);
+                return await reader.ReadToEndAsync();
+            }
+        }
+
+        // Handles outgoing response
+        public class HttpResponse
+        {
+            private readonly HttpListenerResponse _response;
+
+            public HttpResponse(HttpListenerResponse response)
+            {
+                _response = response;
+            }
+
+            public int StatusCode
+            {
+                get => _response.StatusCode;
+                set => _response.StatusCode = value;
+            }
+
+            public async Task WriteAsync(string content, string contentType = "text/plain")
+            {
+                _response.ContentType = contentType;
+                byte[] buffer = Encoding.UTF8.GetBytes(content);
+                _response.ContentLength64 = buffer.Length;
+                using var output = _response.OutputStream;
+                await output.WriteAsync(buffer, 0, buffer.Length);
+            }
+
+            public async Task RenderAsync(string filePath, Dictionary<string, string>? data = null)
+            {
+                if (!File.Exists(filePath))
+                {
+                    StatusCode = 404;
+                    await WriteAsync("Template not found");
+                    return;
+                }
+
+                string template = await File.ReadAllTextAsync(filePath);
+                if (data != null)
+                {
+                    foreach (var item in data)
+                    {
+                        template = template.Replace($"{{{{ {item.Key} }}}}", item.Value);
+                    }
+                }
+
+                await WriteAsync(template, "text/html");
+            }
+
+            public void Redirect(string url)
+            {
+                _response.StatusCode = 302;
+                _response.Redirect(url);
+            }
+        },
+        public delegate Task RequestDelegate(HttpContext context);
+
+    public class HttpContext
+    {
+        public HttpRequest Request { get; }
+        public HttpResponse Response { get; }
+
+        public HttpContext(HttpListenerContext context)
+        {
+            Request = new HttpRequest(context.Request);
+            Response = new HttpResponse(context.Response);
+        }
+    }
+
+    public class HttpRequest
+    {
+        private readonly HttpListenerRequest _request;
+
+        public HttpRequest(HttpListenerRequest request)
+        {
+            _request = request;
+        }
+
+        public Uri Url => _request.Url;
+        public string HttpMethod => _request.HttpMethod;
+
+        public async Task<string> ReadBodyAsync()
+        {
+            using var reader = new StreamReader(_request.InputStream, _request.ContentEncoding);
+            return await reader.ReadToEndAsync();
+        }
+    }
+
+    public class HttpResponse
+    {
+        private readonly HttpListenerResponse _response;
+
+        public HttpResponse(HttpListenerResponse response)
+        {
+            _response = response;
+        }
+
+        public int StatusCode
+        {
+            get => _response.StatusCode;
+            set => _response.StatusCode = value;
+        }
+
+        public async Task WriteAsync(string content, string contentType = "text/plain")
+        {
+            _response.ContentType = contentType;
+            byte[] buffer = Encoding.UTF8.GetBytes(content);
+            _response.ContentLength64 = buffer.Length;
+            using var output = _response.OutputStream;
+            await output.WriteAsync(buffer, 0, buffer.Length);
+        }
+    }
     }
 }
