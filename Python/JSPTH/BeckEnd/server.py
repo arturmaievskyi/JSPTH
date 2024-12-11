@@ -2,6 +2,9 @@ import os
 import re
 from wsgiref.simple_server import make_server
 from urllib.parse import parse_qs
+import json
+import uuid  # For generating session IDs
+
 
 
 class HttpRequest:
@@ -13,7 +16,17 @@ class HttpRequest:
         self.body = environ["wsgi.input"].read(int(environ.get("CONTENT_LENGTH", 0) or 0)).decode("utf-8")
         self.query_params = parse_qs(self.query_string)
         self.body_params = parse_qs(self.body)
-
+    
+    def _parse_cookies(self, cookie_header):
+        """
+        Parses the cookies from the HTTP_COOKIE header.
+        """
+        cookies = {}
+        for pair in cookie_header.split("; "):
+            if "=" in pair:
+                key, value = pair.split("=", 1)
+                cookies[key] = value
+        return cookies
 
 class HttpResponse:
     def __init__(self, body="", status=200, headers=None):
@@ -28,12 +41,26 @@ class HttpResponse:
         self.status = 302
         self.set_header("Location", url)
 
+    def set_cookie(self, key, value, path="/", max_age=None):
+        """
+        Sets a cookie in the HTTP response.
+        """
+        cookie = f"{key}={value}; Path={path}"
+        if max_age:
+            cookie += f"; Max-Age={max_age}"
+        self.set_header("Set-Cookie", cookie)
+
+    def json(self, data):
+        """
+        Sets the response to JSON format and serializes the given data.
+        """
+        self.body = json.dumps(data)
+        self.set_header("Content-Type", "application/json")
 
 class HttpContext:
     def __init__(self, request: HttpRequest, response: HttpResponse):
         self.request = request
         self.response = response
-
 
 class Route:
     def __init__(self, path, methods, handler):
@@ -51,7 +78,6 @@ class Route:
         match = self.dynamic_match.fullmatch(path)
         return match.groupdict() if match else {}
 
-
 class Middleware:
     def __init__(self):
         self.pre_request = []
@@ -63,13 +89,22 @@ class Middleware:
     def add_post_request(self, func):
         self.post_request.append(func)
 
-
 class WebServer:
     def __init__(self, static_folder="static"):
         self.routes = []
         self.middleware = Middleware()
         self.static_folder = static_folder
+        self.session_manager = SessionManager()
 
+    def get_session(self, request: HttpRequest, response: HttpResponse):
+        """
+        Retrieves or creates a session for the request.
+        """
+        session_id = request.cookies.get("SESSION_ID")
+        if not session_id or session_id not in self.session_manager.sessions:
+            session_id = self.session_manager.create_session()
+            response.set_cookie("SESSION_ID", session_id)
+        return self.session_manager.get_session(session_id), session_id
     def route(self, path, methods=["GET"]):
         """
         Register a route with the given path and HTTP methods.
@@ -172,3 +207,27 @@ class WebServer:
         print(f"Starting server at http://{host}:{port}")
         server = make_server(host, port, self._make_handler)
         server.serve_forever()
+
+class SessionManager:
+    def __init__(self):
+        self.sessions = {}
+
+    def get_session(self, session_id):
+        """
+        Retrieves session data for the given session ID.
+        """
+        return self.sessions.get(session_id, {})
+
+    def create_session(self):
+        """
+        Creates a new session and returns the session ID.
+        """
+        session_id = str(uuid.uuid4())
+        self.sessions[session_id] = {}
+        return session_id
+
+    def save_session(self, session_id, data):
+        """
+        Saves session data for the given session ID.
+        """
+        self.sessions[session_id] = data
