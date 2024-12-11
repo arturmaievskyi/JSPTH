@@ -1469,18 +1469,32 @@ namespace JSCSH
             }
         },
         public delegate Task RequestDelegate(HttpContext context);
-        
         public class HttpContext
     {
-        public HttpRequest Request { get; }
-        public HttpResponse Response { get; }
+            public HttpRequest Request { get; }
+            public HttpResponse Response { get; }
+            public Session Session { get; }
 
-        public HttpContext(HttpListenerContext context)
-        {
-            Request = new HttpRequest(context.Request);
-            Response = new HttpResponse(context.Response);
+            // Storage for per-request items
+            public Dictionary<string, object> Items { get; } = new();
+
+            public HttpContext(HttpListenerContext context)
+            {
+                Request = new HttpRequest(context.Request);
+                Response = new HttpResponse(context.Response);
+                Session = SessionManager.GetSession(Request, Response);
+            }
+
+            // Helper to get DbContext from Items
+            public T GetService<T>() where T : class
+            {
+                if (Items.TryGetValue("DbContext", out var service))
+                {
+                    return service as T ?? throw new InvalidOperationException("Service not found.");
+                }
+                throw new InvalidOperationException("Service not found.");
+            }
         }
-    }
         public class Route
         {
             private readonly Regex _regex;
@@ -1608,6 +1622,22 @@ namespace JSCSH
                 public string Name { get; set; }
                 public string Email { get; set; }
             }
+        public static class DatabaseMiddleware
+            {
+                public static Func<RequestDelegate, RequestDelegate> Middleware()
+                {
+                    return next => async context =>
+                    {
+                        using var dbContext = DatabaseService.GetContext();
+                        context.Items["DbContext"] = dbContext;
 
+                        await next(context);
+
+                        // Ensure changes are saved at the end of the request
+                        await dbContext.SaveChangesAsync();
+                    };
+                }
+            }
+        
     }
 }
