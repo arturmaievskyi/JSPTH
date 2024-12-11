@@ -1,88 +1,174 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse
 import os
+import re
+from wsgiref.simple_server import make_server
+from urllib.parse import parse_qs
 
 
-class SimpleServer:
-    def __init__(self, host='localhost', port=8080, template_dir='templates', static_dir='static'):
-        self.host = host
-        self.port = port
-        self.routes = {}
-        self.template_dir = template_dir
-        self.static_dir = static_dir
+class HttpRequest:
+    def __init__(self, environ):
+        self.method = environ["REQUEST_METHOD"]
+        self.path = environ["PATH_INFO"]
+        self.query_string = environ["QUERY_STRING"]
+        self.headers = {key[5:]: value for key, value in environ.items() if key.startswith("HTTP_")}
+        self.body = environ["wsgi.input"].read(int(environ.get("CONTENT_LENGTH", 0) or 0)).decode("utf-8")
+        self.query_params = parse_qs(self.query_string)
+        self.body_params = parse_qs(self.body)
 
-    def route(self, path, methods=['GET']):
-        """Decorator to register a function as a route handler for specific paths and methods."""
+
+class HttpResponse:
+    def __init__(self, body="", status=200, headers=None):
+        self.body = body
+        self.status = status
+        self.headers = headers or [("Content-Type", "text/html")]
+
+    def set_header(self, key, value):
+        self.headers.append((key, value))
+
+    def redirect(self, url):
+        self.status = 302
+        self.set_header("Location", url)
+
+
+class HttpContext:
+    def __init__(self, request: HttpRequest, response: HttpResponse):
+        self.request = request
+        self.response = response
+
+
+class Route:
+    def __init__(self, path, methods, handler):
+        self.path = path
+        self.methods = methods
+        self.handler = handler
+        self.dynamic_match = re.compile(
+            re.sub(r"<(\w+)>", r"(?P<\1>[^/]+)", path)
+        )  # Convert `/user/<id>` to regex
+
+    def matches(self, path, method):
+        return self.dynamic_match.fullmatch(path) and method in self.methods
+
+    def extract_params(self, path):
+        match = self.dynamic_match.fullmatch(path)
+        return match.groupdict() if match else {}
+
+
+class Middleware:
+    def __init__(self):
+        self.pre_request = []
+        self.post_request = []
+
+    def add_pre_request(self, func):
+        self.pre_request.append(func)
+
+    def add_post_request(self, func):
+        self.post_request.append(func)
+
+
+class WebServer:
+    def __init__(self, static_folder="static"):
+        self.routes = []
+        self.middleware = Middleware()
+        self.static_folder = static_folder
+
+    def route(self, path, methods=["GET"]):
+        """
+        Register a route with the given path and HTTP methods.
+        """
         def decorator(func):
-            for method in methods:
-                self.routes[(path, method)] = func
+            self.routes.append(Route(path, methods, func))
             return func
         return decorator
 
-    def render_template(self, template_name, **context):
-        """Render an HTML template, replacing placeholders with context values."""
-        template_path = os.path.join(self.template_dir, template_name)
-        try:
-            with open(template_path, 'r', encoding='utf-8') as f:
+    def use(self, middleware_func, stage="pre"):
+        """
+        Add middleware for pre- or post-request stages.
+        """
+        if stage == "pre":
+            self.middleware.add_pre_request(middleware_func)
+        elif stage == "post":
+            self.middleware.add_post_request(middleware_func)
+
+    def redirect(self, ctx: HttpContext, url):
+        """
+        Redirect a request to another URL.
+        """
+        ctx.response.redirect(url)
+
+    def render_template(self, template, **context):
+        """
+        Render a template using Python string formatting.
+        """
+        return template.format(**context)
+
+    def send_static_file(self, ctx: HttpContext):
+        """
+        Serve static files from the static folder.
+        """
+        static_path = os.path.join(self.static_folder, ctx.request.path.lstrip("/"))
+        if os.path.exists(static_path) and os.path.isfile(static_path):
+            with open(static_path, "rb") as f:
                 content = f.read()
-            for key, value in context.items():
-                placeholder = '{{ ' + key + ' }}'
-                content = content.replace(placeholder, str(value))
-            return content
-        except FileNotFoundError:
-            print(f"Template '{template_name}' not found.")
-            return None
+            mime_type = "text/plain"
+            if static_path.endswith(".html"):
+                mime_type = "text/html"
+            elif static_path.endswith(".css"):
+                mime_type = "text/css"
+            elif static_path.endswith(".js"):
+                mime_type = "application/javascript"
+            elif static_path.endswith(".png"):
+                mime_type = "image/png"
+            elif static_path.endswith(".jpg") or static_path.endswith(".jpeg"):
+                mime_type = "image/jpeg"
+            ctx.response.set_header("Content-Type", mime_type)
+            ctx.response.body = content.decode("utf-8")
+        else:
+            ctx.response.status = 404
+            ctx.response.body = "404 Not Found"
 
-    def send_static_file(self, filename):
-        """Serve static files such as CSS, JavaScript, or images."""
-        static_path = os.path.join(self.static_dir, filename)
-        try:
-            with open(static_path, 'rb') as f:
-                return f.read()
-        except FileNotFoundError:
-            print(f"Static file '{filename}' not found.")
-            return None
+    def _make_handler(self, environ, start_response):
+        """
+        WSGI entry point for handling requests.
+        """
+        request = HttpRequest(environ)
+        response = HttpResponse()
+        context = HttpContext(request, response)
 
+        # Apply pre-request middleware
+        for middleware in self.middleware.pre_request:
+            middleware(context)
 
+        # Route matching
+        for route in self.routes:
+            if route.matches(request.path, request.method):
+                params = route.extract_params(request.path)
+                context.request.params = params
+                try:
+                    route.handler(context)
+                except Exception as e:
+                    response.status = 500
+                    response.body = f"<h1>500 Internal Server Error</h1><pre>{e}</pre>"
+                break
+        else:
+            # Handle static files or 404
+            if request.path.startswith(f"/{self.static_folder}"):
+                self.send_static_file(context)
+            else:
+                response.status = 404
+                response.body = "<h1>404 Not Found</h1>"
 
-    def _make_handler(self):
-        """Creates a custom request handler class that can access the SimpleServer instance."""
-        server = self
-        class RequestHandler(BaseHTTPRequestHandler):
-            def do_GET(self):
-                self._handle_request('GET')
+        # Apply post-request middleware
+        for middleware in self.middleware.post_request:
+            middleware(context)
 
-            def do_POST(self):
-                self._handle_request('POST')
+        status_text = {200: "OK", 302: "Found", 404: "Not Found", 500: "Internal Server Error"}
+        status_line = f"{response.status} {status_text.get(response.status, 'Unknown')}"
+        start_response(status_line, response.headers)
+        return [response.body.encode("utf-8")]
 
-            def _handle_request(self, method):
-                parsed_path = urlparse(self.path)
-                handler = server.routes.get((parsed_path.path, method))
-                if handler:
-                    handler(self)
-                else:
-                    static_content = server.send_static_file(parsed_path.path.lstrip('/'))
-                    if static_content:
-                        self.send_response(200)
-                        self.end_headers()
-                        self.wfile.write(static_content)
-                    else:
-                        self.send_error(404, "File not found")
-
-            def send_html(self, html_content):
-                """Helper method to send HTML content."""
-                self.send_response(200)
-                self.send_header('Content-type', 'text/html')
-                self.end_headers()
-                self.wfile.write(html_content.encode())
-                
-        return RequestHandler
-    def run(self):
-        """Start the server."""
-        server_address = (self.host, self.port)
-        httpd = HTTPServer(server_address, self._make_handler())
-        print(f"Running on http://{self.host}:{self.port}")
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("Server stopped.")
+    def run(self, host="127.0.0.1", port=8000):
+        """
+        Start the WSGI server.
+        """
+        print(f"Starting server at http://{host}:{port}")
+        server = make_server(host, port, self._make_handler)
+        server.serve_forever()
