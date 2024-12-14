@@ -4,6 +4,8 @@ from wsgiref.simple_server import make_server
 from urllib.parse import parse_qs
 import json
 import uuid  # For generating session IDs
+import sys
+from importlib import import_module
 
 
 
@@ -231,3 +233,60 @@ class SessionManager:
         Saves session data for the given session ID.
         """
         self.sessions[session_id] = data
+
+class Console:
+    def __init__(self, project_module):
+        """
+        Initialize the Console with the main project module.
+        :param project_module: The main module where commands are defined (e.g., 'web_project').
+        """
+        self.project_module = project_module
+        self.commands = {}
+        self._load_commands()
+
+    def _load_commands(self):
+        """
+        Load commands defined in the user project.
+        """
+        try:
+            project = import_module(self.project_module)
+            if hasattr(project, "commands"):
+                self.commands = project.commands
+            else:
+                print(f"No commands found in {self.project_module}.")
+        except ModuleNotFoundError:
+            print(f"Module {self.project_module} not found. Please ensure it exists.")
+
+    def run(self):
+        """
+        Parse command-line arguments and execute the specified command.
+        """
+        if len(sys.argv) < 2:
+            self._print_usage()
+            return
+
+        command_name = sys.argv[1]
+        args = sys.argv[2:]
+
+        if command_name in self.commands:
+            try:
+                self.commands[command_name](*args)
+            except TypeError as e:
+                print(f"Error executing command '{command_name}': {e}")
+        else:
+            print(f"Unknown command: {command_name}")
+            self._print_usage()
+
+    def _print_usage(self):
+        """
+        Print usage instructions and available commands.
+        """
+        print("Usage: python manage.py <command> [arguments]")
+        print("Available commands:")
+        for command_name in self.commands:
+            print(f"  - {command_name}")
+
+comands = {
+    'run': Console.run(),
+    
+}
