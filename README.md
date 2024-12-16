@@ -4,8 +4,7 @@ This is My own library. The library is written on 8 Programing languages. The li
 ## Which language what has??
 
 At the first they have Math library the same and convertors they have the same.
-The second think Beckend wouldnt in my library in C++, GO. 
-The seconthird think Datanalytics would only in Python
+The second think Datanalytics would only in Python
 
 ### Python 
 
