@@ -56,8 +56,6 @@ class Key():
         )
         return kdf.derive(password.encode()), salt
 
-
-
 class Rsa():
     def generate_rsa_keys(key_size: int = 2048):
         """Generates an RSA key pair."""
@@ -78,7 +76,6 @@ class Rsa():
             ciphertext,
             padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None),
         ).decode()
-    
 
 class Aes:
     def encrypt_aes(key: bytes, plaintext: str) -> bytes:
@@ -104,5 +101,4 @@ class Aes:
         unpadder = PKCS7(128).unpadder()
         padded_data = decryptor.update(actual_ciphertext) + decryptor.finalize()
         return unpadder.update(padded_data) + unpadder.finalize()
-
 
