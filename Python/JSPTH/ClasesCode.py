@@ -13,6 +13,143 @@ from multiprocessing import Process, Pipe
 import psutil
 import platform
 import math
+import time
+import hashlib
+import hmac
+from functools import wraps
+
+
+class UtilityClass(ABC):
+    """
+    A unified utility class with various decorators and cryptographic/hashing functionality.
+    """
+
+    # ------------------------
+    # Abstract Methods Example
+    # ------------------------
+
+    @abstractmethod
+    def abstract_function(self):
+        """
+        Abstract method to demonstrate enforced implementation in subclasses.
+        """
+        pass
+
+    # ------------------------
+    # Logging Decorator
+    # ------------------------
+
+    @staticmethod
+    def log_execution(func):
+        """
+        Logs the function name, arguments, and return value.
+        """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            print(f"Executing {func.__name__} with args={args} kwargs={kwargs}")
+            result = func(*args, **kwargs)
+            print(f"{func.__name__} returned {result}")
+            return result
+        return wrapper
+
+    # ------------------------
+    # Access Control Decorator
+    # ------------------------
+
+    @staticmethod
+    def require_role(role):
+        """
+        Enforces access control by checking user role.
+        """
+        def decorator(func):
+            @wraps(func)
+            def wrapper(user, *args, **kwargs):
+                if user.get("role") != role:
+                    raise PermissionError(f"User does not have the required role: {role}")
+                return func(user, *args, **kwargs)
+            return wrapper
+        return decorator
+
+    # ------------------------
+    # Caching Decorator
+    # ------------------------
+
+    @staticmethod
+    def cache_results(func):
+        """
+        Caches the results of the function based on its arguments.
+        """
+        cache = {}
+
+        @wraps(func)
+        def wrapper(*args):
+            if args in cache:
+                print(f"Cache hit for args={args}")
+                return cache[args]
+            print(f"Cache miss for args={args}")
+            result = func(*args)
+            cache[args] = result
+            return result
+        return wrapper
+
+    # ------------------------
+    # Validation Decorator
+    # ------------------------
+
+    @staticmethod
+    def validate_positive(func):
+        """
+        Ensures all arguments are positive numbers.
+        """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if any(arg < 0 for arg in args if isinstance(arg, (int, float))):
+                raise ValueError("All arguments must be positive.")
+            return func(*args, **kwargs)
+        return wrapper
+
+    # ------------------------
+    # Retry Decorator
+    # ------------------------
+
+    @staticmethod
+    def retry(times=3, delay=1):
+        """
+        Retries the function a specified number of times with a delay.
+        """
+        def decorator(func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                attempts = 0
+                while attempts < times:
+                    try:
+                        return func(*args, **kwargs)
+                    except Exception as e:
+                        print(f"Attempt {attempts + 1} failed: {e}")
+                        attempts += 1
+                        time.sleep(delay)
+                raise RuntimeError(f"Function {func.__name__} failed after {times} attempts")
+            return wrapper
+        return decorator
+
+    # ------------------------
+    # Execution Time Decorator
+    # ------------------------
+
+    @staticmethod
+    def measure_time(func):
+        """
+        Measures the execution time of the function.
+        """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            start_time = time.time()
+            result = func(*args, **kwargs)
+            end_time = time.time()
+            print(f"{func.__name__} executed in {end_time - start_time:.4f} seconds")
+            return result
+        return wrapper
+
 
 class console(ABC):
     def log(arguments):

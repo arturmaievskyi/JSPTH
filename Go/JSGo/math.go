@@ -1,9 +1,259 @@
-package main
+package JSGo
 
 import (
-	"fmt"
 	"errors"
+	"math"
+	"fmt"
 )
+
+// Mathematics provides various mathematical functions.
+type Mathematics struct{}
+
+// QuadraticSolver solves a quadratic equation ax^2 + bx + c = 0.
+// Returns the roots or an error if no real roots exist.
+func (Mathematics) QuadraticSolver(a, b, c float64) (float64, float64, error) {
+	discriminant := b*b - 4*a*c
+	if discriminant < 0 {
+		return 0, 0, errors.New("no real roots")
+	}
+	root1 := (-b + math.Sqrt(discriminant)) / (2 * a)
+	root2 := (-b - math.Sqrt(discriminant)) / (2 * a)
+	return root1, root2, nil
+}
+
+// LinearSolver solves a linear equation ax + b = 0.
+// Returns the solution or an error if a = 0.
+func (Mathematics) LinearSolver(a, b float64) (float64, error) {
+	if a == 0 {
+		return 0, errors.New("no solution for a = 0")
+	}
+	return -b / a, nil
+}
+
+// ExponentialSolver solves an equation of the form a^x = b.
+// Returns x or an error if a <= 0 or b <= 0.
+func (Mathematics) ExponentialSolver(a, b float64) (float64, error) {
+	if a <= 0 || b <= 0 {
+		return 0, errors.New("base and result must be positive")
+	}
+	return math.Log(b) / math.Log(a), nil
+}
+
+// LogarithmSolver solves a logarithmic equation log_a(x) = b.
+// Returns x or an error if a <= 0 or b <= 0.
+func (Mathematics) LogarithmSolver(a, b float64) (float64, error) {
+	if a <= 0 || b <= 0 {
+		return 0, errors.New("base and result must be positive")
+	}
+	return math.Pow(a, b), nil
+}
+
+// PolynomialEval evaluates a polynomial at a given x.
+// Coefficients are given in decreasing order of powers.
+func (Mathematics) PolynomialEval(coeffs []float64, x float64) float64 {
+	result := 0.0
+	for i, coef := range coeffs {
+		power := len(coeffs) - i - 1
+		result += coef * math.Pow(x, float64(power))
+	}
+	return result
+}
+
+// GCD calculates the greatest common divisor of two integers.
+func (Mathematics) GCD(a, b int) int {
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
+}
+
+// LCM calculates the least common multiple of two integers.
+func (Mathematics) LCM(a, b int) int {
+	return a * b / Mathematics{}.GCD(a, b)
+}
+
+// BinomialCoefficient calculates the binomial coefficient C(n, k).
+func (Mathematics) BinomialCoefficient(n, k int) int {
+	if k > n || k < 0 {
+		return 0
+	}
+	result := 1
+	for i := 0; i < k; i++ {
+		result = result * (n - i) / (i + 1)
+	}
+	return result
+}
+
+// ArithmeticProgression calculates the nth term of an AP.
+func (Mathematics) ArithmeticProgression(a, d, n int) int {
+	return a + (n-1)*d
+}
+
+// GeometricProgression calculates the nth term of a GP.
+func (Mathematics) GeometricProgression(a, r, n int) int {
+	return a * int(math.Pow(float64(r), float64(n-1)))
+}
+
+// GeometricSeriesSum calculates the sum of the first n terms of a GP.
+func (Mathematics) GeometricSeriesSum(a, r, n int) int {
+	if r == 1 {
+		return a * n
+	}
+	return int(float64(a) * (1 - math.Pow(float64(r), float64(n))) / (1 - float64(r)))
+}
+
+// MathOperations provides various mathematical functions.
+type MathOperations struct{}
+
+// Add returns the sum of two numbers.
+func (MathOperations) Add(a, b float64) float64 {
+	return a + b
+}
+
+// Subtract returns the difference of two numbers.
+func (MathOperations) Subtract(a, b float64) float64 {
+	return a - b
+}
+
+// Multiply returns the product of two numbers.
+func (MathOperations) Multiply(a, b float64) float64 {
+	return a * b
+}
+
+// Divide performs division and returns the result. Returns an error if division by zero occurs.
+func (MathOperations) Divide(a, b float64) (float64, error) {
+	if b == 0 {
+		return 0, errors.New("division by zero is not allowed")
+	}
+	return a / b, nil
+}
+
+// Factorial returns the factorial of an integer. Returns an error for negative numbers.
+func (MathOperations) Factorial(n int) (int, error) {
+	if n < 0 {
+		return 0, errors.New("factorial is not defined for negative numbers")
+	}
+	result := 1
+	for i := 2; i <= n; i++ {
+		result *= i
+	}
+	return result, nil
+}
+
+// Power returns the result of raising base to the power exponent.
+func (MathOperations) Power(base, exponent float64) float64 {
+	return math.Pow(base, exponent)
+}
+
+// IsPrime checks if a number is prime.
+func (MathOperations) IsPrime(n int) bool {
+	if n < 2 {
+		return false
+	}
+	for i := 2; i <= int(math.Sqrt(float64(n))); i++ {
+		if n%i == 0 {
+			return false
+		}
+	}
+	return true
+}
+
+
+// Trigonometry provides various trigonometric and related functions.
+type Trigonometry struct{}
+
+// Sine returns the sine of an angle (in radians).
+func (Trigonometry) Sine(angle float64) float64 {
+	return math.Sin(angle)
+}
+
+// Cosine returns the cosine of an angle (in radians).
+func (Trigonometry) Cosine(angle float64) float64 {
+	return math.Cos(angle)
+}
+
+// Tangent returns the tangent of an angle (in radians).
+func (Trigonometry) Tangent(angle float64) float64 {
+	return math.Tan(angle)
+}
+
+// ArcSine returns the arcsine (inverse sine) of a value.
+func (Trigonometry) ArcSine(value float64) float64 {
+	return math.Asin(value)
+}
+
+// ArcCosine returns the arccosine (inverse cosine) of a value.
+func (Trigonometry) ArcCosine(value float64) float64 {
+	return math.Acos(value)
+}
+
+// ArcTangent returns the arctangent (inverse tangent) of a value.
+func (Trigonometry) ArcTangent(value float64) float64 {
+	return math.Atan(value)
+}
+
+// LawOfCosines calculates the third side of a triangle given two sides and the included angle.
+func (Trigonometry) LawOfCosines(a, b, angle float64) float64 {
+	return math.Sqrt(a*a + b*b - 2*a*b*math.Cos(angle))
+}
+
+// LawOfSines calculates a side length using the law of sines.
+func (Trigonometry) LawOfSines(a, A, B float64) float64 {
+	return (a * math.Sin(B)) / math.Sin(A)
+}
+
+// Secant returns the secant of an angle (in radians).
+func (Trigonometry) Secant(angle float64) float64 {
+	return 1 / math.Cos(angle)
+}
+
+// Cosecant returns the cosecant of an angle (in radians).
+func (Trigonometry) Cosecant(angle float64) float64 {
+	return 1 / math.Sin(angle)
+}
+
+// Cotangent returns the cotangent of an angle (in radians).
+func (Trigonometry) Cotangent(angle float64) float64 {
+	return 1 / math.Tan(angle)
+}
+
+// SineSum calculates the sine of the sum of two angles.
+func (Trigonometry) SineSum(a, b float64) float64 {
+	return math.Sin(a)*math.Cos(b) + math.Cos(a)*math.Sin(b)
+}
+
+// CosineSum calculates the cosine of the sum of two angles.
+func (Trigonometry) CosineSum(a, b float64) float64 {
+	return math.Cos(a)*math.Cos(b) - math.Sin(a)*math.Sin(b)
+}
+
+// TangentSum calculates the tangent of the sum of two angles.
+func (Trigonometry) TangentSum(a, b float64) float64 {
+	return (math.Tan(a) + math.Tan(b)) / (1 - math.Tan(a)*math.Tan(b))
+}
+
+// SineDouble calculates the sine of twice an angle.
+func (Trigonometry) SineDouble(a float64) float64 {
+	return 2 * math.Sin(a) * math.Cos(a)
+}
+
+// CosineDouble calculates the cosine of twice an angle.
+func (Trigonometry) CosineDouble(a float64) float64 {
+	return math.Cos(a)*math.Cos(a) - math.Sin(a)*math.Sin(a)
+}
+
+// TangentDouble calculates the tangent of twice an angle.
+func (Trigonometry) TangentDouble(a float64) float64 {
+	return 2 * math.Tan(a) / (1 - math.Tan(a)*math.Tan(a))
+}
+
+// PolarToCartesian converts polar coordinates to Cartesian coordinates.
+func (Trigonometry) PolarToCartesian(r, theta float64) (x, y float64) {
+	x = r * math.Cos(theta)
+	y = r * math.Sin(theta)
+	return x, y
+}
+
 
 // Converters provides various unit conversion utilities.
 type Converters struct{}

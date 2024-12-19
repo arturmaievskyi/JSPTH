@@ -1,6 +1,6 @@
 import{
     "fmt"
-    "JSGo/MathGO/MainMath"
+    "JSGo"
 }
 
 
