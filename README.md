@@ -30,8 +30,11 @@ The second think Datanalytics would only in Python
 
 
 ### Rust
-
-
+1. Converters 
+2. File working
+3. crypto
+4. math
+5. 
 
 ### C++
 
