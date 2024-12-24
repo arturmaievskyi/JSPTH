@@ -24,6 +24,7 @@ import sqlite3
 from crontab import CronTab
 import time
 import requests
+from typing import Dict, Optional, List
 
 
 class UtilityClass(ABC):
@@ -1702,3 +1703,149 @@ class OAuthManager:
             return response.json()
         except requests.exceptions.RequestException as e:
             raise RuntimeError(f"Token exchange failed: {e}")
+
+class APIClient:
+    """
+    A reusable API client for interacting with third-party RESTful APIs.
+    """
+
+    def __init__(self, base_url: str, headers: Optional[Dict[str, str]] = None, timeout: int = 30):
+        """
+        Initialize the API client.
+        :param base_url: Base URL for the API.
+        :param headers: Default headers for requests.
+        :param timeout: Request timeout in seconds.
+        """
+        self.base_url = base_url.rstrip("/")
+        self.headers = headers or {}
+        self.timeout = timeout
+
+    def _make_request(self, method: str, endpoint: str, **kwargs):
+        """
+        Internal helper for making HTTP requests.
+        """
+        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        try:
+            response = requests.request(
+                method=method, url=url, headers=self.headers, timeout=self.timeout, **kwargs
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"API request error: {e}")
+
+    def get(self, endpoint: str, params: Optional[Dict] = None):
+        """Perform a GET request."""
+        return self._make_request("GET", endpoint, params=params)
+
+    def post(self, endpoint: str, data: Optional[Dict] = None, json_data: Optional[Dict] = None):
+        """Perform a POST request."""
+        return self._make_request("POST", endpoint, data=data, json=json_data)
+
+    def put(self, endpoint: str, data: Optional[Dict] = None, json_data: Optional[Dict] = None):
+        """Perform a PUT request."""
+        return self._make_request("PUT", endpoint, data=data, json=json_data)
+
+    def delete(self, endpoint: str):
+        """Perform a DELETE request."""
+        return self._make_request("DELETE", endpoint)
+
+
+class WebhookManager:
+    """
+    Tools for sending and verifying webhooks.
+    """
+
+    @staticmethod
+    def verify_signature(secret: str, payload: str, signature: str, algorithm: str = "sha256") -> bool:
+        """
+        Verify the HMAC signature of a webhook payload.
+        :param secret: Shared secret key.
+        :param payload: Raw payload string.
+        :param signature: Received signature for validation.
+        :param algorithm: Hashing algorithm (default: sha256).
+        :return: True if the signature matches, False otherwise.
+        """
+        computed_signature = hmac.new(
+            key=secret.encode(), msg=payload.encode(), digestmod=getattr(hashlib, algorithm)
+        ).hexdigest()
+        return hmac.compare_digest(computed_signature, signature)
+
+    @staticmethod
+    def send_webhook(url: str, payload: Dict, headers: Optional[Dict[str, str]] = None) -> requests.Response:
+        """
+        Send a webhook payload to a given URL.
+        :param url: Target webhook URL.
+        :param payload: JSON payload to send.
+        :param headers: Optional headers for the request.
+        :return: Response object.
+        """
+        headers = headers or {"Content-Type": "application/json"}
+        try:
+            response = requests.post(url, data=json.dumps(payload), headers=headers)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Failed to send webhook: {e}")
+
+
+class OAuthManager:
+    """
+    Helper class for handling OAuth2 authentication flows.
+    """
+
+    def __init__(self, client_id: str, client_secret: str, auth_url: str, token_url: str, redirect_uri: str):
+        """
+        Initialize the OAuth manager.
+        :param client_id: OAuth2 client ID.
+        :param client_secret: OAuth2 client secret.
+        :param auth_url: Authorization endpoint URL.
+        :param token_url: Token exchange endpoint URL.
+        :param redirect_uri: Redirect URI after user authentication.
+        """
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.auth_url = auth_url
+        self.token_url = token_url
+        self.redirect_uri = redirect_uri
+
+    def get_auth_url(self, state: Optional[str] = None, scope: Optional[List[str]] = None) -> str:
+        """
+        Generate the authorization URL for user login.
+        :param state: Optional state parameter for CSRF protection.
+        :param scope: List of permissions.
+        :return: Authorization URL.
+        """
+        params = {
+            "client_id": self.client_id,
+            "response_type": "code",
+            "redirect_uri": self.redirect_uri,
+        }
+        if state:
+            params["state"] = state
+        if scope:
+            params["scope"] = " ".join(scope)
+        query_string = "&".join(f"{k}={v}" for k, v in params.items())
+        return f"{self.auth_url}?{query_string}"
+
+    def exchange_code_for_token(self, code: str) -> Dict:
+        """
+        Exchange an authorization code for an access token.
+        :param code: Authorization code from the auth server.
+        :return: Access token and related information.
+        """
+        payload = {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": self.redirect_uri,
+        }
+        try:
+            response = requests.post(self.token_url, data=payload)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Token exchange error: {e}")
+
+
