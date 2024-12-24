@@ -23,6 +23,7 @@ import gzip
 import sqlite3
 from crontab import CronTab
 import time
+import requests
 
 
 class UtilityClass(ABC):
@@ -1555,3 +1556,149 @@ class BackgroundJob:
         while True:
             subprocess.run(command, shell=True)
             time.sleep(interval)
+
+class APIClient:
+    """
+    A reusable API client for making HTTP requests to third-party APIs.
+    """
+
+    def __init__(self, base_url, headers=None, timeout=30):
+        """
+        Initialize the API client.
+        :param base_url: Base URL for the API.
+        :param headers: Default headers to include with every request.
+        :param timeout: Timeout for API requests in seconds.
+        """
+        self.base_url = base_url.rstrip("/")
+        self.headers = headers or {}
+        self.timeout = timeout
+
+    def _make_request(self, method, endpoint, **kwargs):
+        """
+        Make an HTTP request to the API.
+        :param method: HTTP method (GET, POST, etc.).
+        :param endpoint: API endpoint relative to the base URL.
+        :return: Response object.
+        """
+        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        try:
+            response = requests.request(
+                method=method, url=url, headers=self.headers, timeout=self.timeout, **kwargs
+            )
+            response.raise_for_status()  # Raise HTTPError for bad responses (4xx and 5xx)
+            return response.json()  # Parse JSON response
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"API request failed: {e}")
+
+    def get(self, endpoint, params=None):
+        """Make a GET request."""
+        return self._make_request("GET", endpoint, params=params)
+
+    def post(self, endpoint, data=None, json_data=None):
+        """Make a POST request."""
+        return self._make_request("POST", endpoint, data=data, json=json_data)
+
+    def put(self, endpoint, data=None, json_data=None):
+        """Make a PUT request."""
+        return self._make_request("PUT", endpoint, data=data, json=json_data)
+
+    def delete(self, endpoint):
+        """Make a DELETE request."""
+        return self._make_request("DELETE", endpoint)
+
+class WebhookManager:
+    """
+    A utility class for managing and validating webhooks.
+    """
+
+    @staticmethod
+    def verify_signature(secret, payload, signature, algorithm="sha256"):
+        """
+        Verify the signature of a webhook payload.
+        :param secret: Shared secret key.
+        :param payload: The raw webhook payload.
+        :param signature: The received signature to verify.
+        :param algorithm: The hashing algorithm to use (default: sha256).
+        :return: True if the signature is valid, False otherwise.
+        """
+        computed_signature = hmac.new(
+            key=secret.encode(), msg=payload.encode(), digestmod=getattr(hashlib, algorithm)
+        ).hexdigest()
+        return hmac.compare_digest(computed_signature, signature)
+
+    @staticmethod
+    def send_webhook(url, payload, headers=None):
+        """
+        Send a webhook payload to a specified URL.
+        :param url: Webhook URL.
+        :param payload: Data to send in the webhook.
+        :param headers: Optional headers to include in the request.
+        :return: Response object.
+        """
+        headers = headers or {"Content-Type": "application/json"}
+        try:
+            response = requests.post(url, data=json.dumps(payload), headers=headers)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Failed to send webhook: {e}")
+
+class OAuthManager:
+    """
+    A helper class for OAuth2 authentication flows.
+    """
+
+    def __init__(self, client_id, client_secret, auth_url, token_url, redirect_uri):
+        """
+        Initialize the OAuth manager.
+        :param client_id: OAuth2 client ID.
+        :param client_secret: OAuth2 client secret.
+        :param auth_url: Authorization URL for user login.
+        :param token_url: Token URL for exchanging codes for tokens.
+        :param redirect_uri: Redirect URI after authentication.
+        """
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.auth_url = auth_url
+        self.token_url = token_url
+        self.redirect_uri = redirect_uri
+
+    def get_auth_url(self, state=None, scope=None):
+        """
+        Generate the URL for user authentication.
+        :param state: Optional state parameter for CSRF protection.
+        :param scope: Optional scope for permissions.
+        :return: Authentication URL.
+        """
+        params = {
+            "client_id": self.client_id,
+            "response_type": "code",
+            "redirect_uri": self.redirect_uri,
+        }
+        if state:
+            params["state"] = state
+        if scope:
+            params["scope"] = " ".join(scope)
+
+        query_string = "&".join(f"{k}={v}" for k, v in params.items())
+        return f"{self.auth_url}?{query_string}"
+
+    def exchange_code_for_token(self, code):
+        """
+        Exchange an authorization code for an access token.
+        :param code: Authorization code received from the auth server.
+        :return: Access token data as a dictionary.
+        """
+        payload = {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": self.redirect_uri,
+        }
+        try:
+            response = requests.post(self.token_url, data=payload)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Token exchange failed: {e}")
