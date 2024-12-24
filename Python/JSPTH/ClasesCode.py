@@ -24,8 +24,11 @@ import sqlite3
 from crontab import CronTab
 import time
 import requests
-from typing import Dict, Optional, List
-
+from typing import Dict, Optional, List, Any, Optional
+import locale
+from babel import dates, numbers
+from faker import Faker
+import datetime
 
 class UtilityClass(ABC):
     """
@@ -1750,7 +1753,6 @@ class APIClient:
         """Perform a DELETE request."""
         return self._make_request("DELETE", endpoint)
 
-
 class WebhookManager:
     """
     Tools for sending and verifying webhooks.
@@ -1787,7 +1789,6 @@ class WebhookManager:
             return response
         except requests.exceptions.RequestException as e:
             raise RuntimeError(f"Failed to send webhook: {e}")
-
 
 class OAuthManager:
     """
@@ -1848,4 +1849,118 @@ class OAuthManager:
         except requests.exceptions.RequestException as e:
             raise RuntimeError(f"Token exchange error: {e}")
 
+class TestingUtils:
+    """
+    Utilities for testing and debugging.
+    """
 
+    @staticmethod
+    def generate_test_data(schema: Dict[str, Any], num_samples: int = 10) -> List[Dict[str, Any]]:
+        """
+        Generate test data based on a schema.
+        :param schema: A dictionary defining field names and types.
+        :param num_samples: Number of test samples to generate.
+        :return: A list of dictionaries containing test data.
+        """
+        fake = Faker()
+        test_data = []
+
+        for _ in range(num_samples):
+            sample = {}
+            for field, field_type in schema.items():
+                if field_type == "name":
+                    sample[field] = fake.name()
+                elif field_type == "email":
+                    sample[field] = fake.email()
+                elif field_type == "phone":
+                    sample[field] = fake.phone_number()
+                elif field_type == "address":
+                    sample[field] = fake.address()
+                elif field_type == "date":
+                    sample[field] = fake.date()
+                elif field_type == "text":
+                    sample[field] = fake.text(max_nb_chars=100)
+                else:
+                    sample[field] = "Unknown"
+            test_data.append(sample)
+
+        return test_data
+
+    @staticmethod
+    def measure_execution_time(func):
+        """
+        Decorator to measure the execution time of a function.
+        :param func: Function to measure.
+        """
+        def wrapper(*args, **kwargs):
+            start_time = time.time()
+            result = func(*args, **kwargs)
+            end_time = time.time()
+            print(f"Function {func.__name__} executed in {end_time - start_time:.4f} seconds")
+            return result
+        return wrapper
+
+    @staticmethod
+    def memory_usage_report(obj: Any) -> str:
+        """
+        Estimate the memory usage of an object.
+        :param obj: Python object.
+        :return: Human-readable memory usage string.
+        """
+        import sys
+        size = sys.getsizeof(obj)
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if size < 1024:
+                return f"{size:.2f} {unit}"
+            size /= 1024
+        return f"{size:.2f} TB"
+
+class LocalizationUtils:
+    """
+    Utilities for localization and internationalization.
+    """
+
+    @staticmethod
+    def set_locale(language_code: str):
+        """
+        Set the locale for the application.
+        :param language_code: Language code (e.g., 'en_US', 'fr_FR').
+        """
+        try:
+            locale.setlocale(locale.LC_ALL, language_code)
+        except locale.Error as e:
+            raise ValueError(f"Invalid locale '{language_code}': {e}")
+
+    @staticmethod
+    def format_date(dt: datetime, locale_code: str = "en_US", date_format: str = "long") -> str:
+        """
+        Format a date in a specific locale.
+        :param dt: The datetime object to format.
+        :param locale_code: Locale code (e.g., 'en_US', 'fr_FR').
+        :param date_format: Date format ('short', 'medium', 'long', 'full').
+        :return: Formatted date string.
+        """
+        return dates.format_date(dt, format=date_format, locale=locale_code)
+
+    @staticmethod
+    def format_number(number: float, locale_code: str = "en_US") -> str:
+        """
+        Format a number in a specific locale.
+        :param number: The number to format.
+        :param locale_code: Locale code (e.g., 'en_US', 'de_DE').
+        :return: Formatted number string.
+        """
+        return numbers.format_decimal(number, locale=locale_code)
+
+    @staticmethod
+    def convert_currency(amount: float, from_currency: str, to_currency: str, exchange_rate: float) -> str:
+        """
+        Convert an amount between currencies and format it.
+        :param amount: Amount to convert.
+        :param from_currency: Source currency code (e.g., 'USD').
+        :param to_currency: Target currency code (e.g., 'EUR').
+        :param exchange_rate: Conversion rate.
+        :return: Formatted currency string.
+        """
+        converted = amount * exchange_rate
+        return f"{from_currency} {amount:,.2f} → {to_currency} {converted:,.2f}"
