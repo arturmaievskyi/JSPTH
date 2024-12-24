@@ -17,23 +17,18 @@ import time
 import hashlib
 import hmac
 from functools import wraps
+import csv
+import json
+import gzip
+import sqlite3
+from crontab import CronTab
+import time
 
 
 class UtilityClass(ABC):
     """
     A unified utility class with various decorators and cryptographic/hashing functionality.
     """
-
-    # ------------------------
-    # Abstract Methods Example
-    # ------------------------
-
-    @abstractmethod
-    def abstract_function(self):
-        """
-        Abstract method to demonstrate enforced implementation in subclasses.
-        """
-        pass
 
     # ------------------------
     # Logging Decorator
@@ -149,7 +144,6 @@ class UtilityClass(ABC):
             print(f"{func.__name__} executed in {end_time - start_time:.4f} seconds")
             return result
         return wrapper
-
 
 class console(ABC):
     def log(arguments):
@@ -1224,4 +1218,340 @@ class IlluminationIntensityConverter:
         value_in_lux = value * IlluminationIntensityConverter.units_in_lux[from_unit]
         return value_in_lux / IlluminationIntensityConverter.units_in_lux[to_unit]
 
-#28 classes
+class DatabaseManager:
+    """
+    SQLite Database Manager with basic query and table handling.
+    """
+
+    def __init__(self, db_path="database.db"):
+        self.db_path = db_path
+        self.connection = None
+
+    def connect(self):
+        """
+        Establishes a connection to the SQLite database.
+        """
+        if self.connection is None:
+            self.connection = sqlite3.connect(self.db_path)
+            self.connection.row_factory = sqlite3.Row
+        return self.connection
+
+    def execute_query(self, query, params=None):
+        """
+        Executes a SQL query with optional parameters.
+        """
+        conn = self.connect()
+        cursor = conn.cursor()
+        cursor.execute(query, params or ())
+        conn.commit()
+        return cursor
+
+    def fetch_all(self, query, params=None):
+        """
+        Executes a query and fetches all results.
+        """
+        cursor = self.execute_query(query, params)
+        return [dict(row) for row in cursor.fetchall()]
+
+    def fetch_one(self, query, params=None):
+        """
+        Executes a query and fetches one result.
+        """
+        cursor = self.execute_query(query, params)
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
+    def create_table(self, table_name, columns):
+        """
+        Creates a new table with the specified columns.
+        """
+        columns_def = ", ".join([f"{col} {dtype}" for col, dtype in columns.items()])
+        query = f"CREATE TABLE IF NOT EXISTS {table_name} ({columns_def})"
+        self.execute_query(query)
+
+    def insert(self, table_name, data):
+        """
+        Inserts a record into the specified table.
+        """
+        columns = ", ".join(data.keys())
+        placeholders = ", ".join(["?" for _ in data])
+        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+        self.execute_query(query, tuple(data.values()))
+
+    def close(self):
+        """
+        Closes the database connection.
+        """
+        if self.connection:
+            self.connection.close()
+            self.connection = None
+
+class FileStorageManager:
+    """
+    File Storage Manager for handling file operations.
+    """
+
+    @staticmethod
+    def write_json(file_path, data):
+        """
+        Writes data to a JSON file.
+        """
+        with open(file_path, "w") as f:
+            json.dump(data, f, indent=4)
+
+    @staticmethod
+    def read_json(file_path):
+        """
+        Reads data from a JSON file.
+        """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"{file_path} not found")
+        with open(file_path, "r") as f:
+            return json.load(f)
+
+    @staticmethod
+    def write_csv(file_path, rows, headers=None):
+        """
+        Writes rows to a CSV file.
+        """
+        with open(file_path, "w", newline="") as f:
+            writer = csv.writer(f)
+            if headers:
+                writer.writerow(headers)
+            writer.writerows(rows)
+
+    @staticmethod
+    def read_csv(file_path):
+        """
+        Reads rows from a CSV file.
+        """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"{file_path} not found")
+        with open(file_path, "r") as f:
+            reader = csv.reader(f)
+            return [row for row in reader]
+
+    @staticmethod
+    def compress_file(file_path, output_path=None):
+        """
+        Compresses a file using gzip.
+        """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"{file_path} not found")
+        output_path = output_path or f"{file_path}.gz"
+        with open(file_path, "rb") as f_in, gzip.open(output_path, "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+        return output_path
+
+    @staticmethod
+    def decompress_file(file_path, output_path=None):
+        """
+        Decompresses a gzip file.
+        """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"{file_path} not found")
+        output_path = output_path or file_path.replace(".gz", "")
+        with gzip.open(file_path, "rb") as f_in, open(output_path, "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+        return output_path
+
+    @staticmethod
+    def delete_file(file_path):
+        """
+        Deletes a file.
+        """
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        else:
+            raise FileNotFoundError(f"{file_path} not found")
+
+    @staticmethod
+    def rename_file(file_path, new_name):
+        """
+        Renames a file.
+        """
+        if os.path.exists(file_path):
+            os.rename(file_path, new_name)
+        else:
+            raise FileNotFoundError(f"{file_path} not found")
+
+class TaskScheduler:
+    """
+    Schedule tasks on the system using cron jobs (for Linux/macOS).
+    """
+
+    def __init__(self, user=True):
+        """
+        Initialize the scheduler.
+        :param user: If True, uses the current user's crontab; otherwise, uses the system-wide crontab.
+        """
+        self.cron = CronTab(user=user)
+
+    def add_job(self, command, schedule, comment=None):
+        """
+        Add a new cron job.
+        :param command: Command to execute.
+        :param schedule: Schedule as a tuple (minute, hour, day, month, day_of_week).
+        :param comment: Optional comment to identify the job.
+        """
+        job = self.cron.new(command=command, comment=comment)
+        minute, hour, day, month, day_of_week = schedule
+        job.setall(minute, hour, day, month, day_of_week)
+        self.cron.write()
+        return job
+
+    def remove_job(self, comment):
+        """
+        Remove a job based on its comment.
+        :param comment: The comment identifying the job to remove.
+        """
+        self.cron.remove_all(comment=comment)
+        self.cron.write()
+
+    def list_jobs(self):
+        """
+        List all existing cron jobs.
+        """
+        return [job for job in self.cron]
+
+class TaskScheduler:
+    """
+    Schedule tasks on the system using cron jobs (for Linux/macOS).
+    """
+
+    def __init__(self, user=True):
+        """
+        Initialize the scheduler.
+        :param user: If True, uses the current user's crontab; otherwise, uses the system-wide crontab.
+        """
+        self.cron = CronTab(user=user)
+
+    def add_job(self, command, schedule, comment=None):
+        """
+        Add a new cron job.
+        :param command: Command to execute.
+        :param schedule: Schedule as a tuple (minute, hour, day, month, day_of_week).
+        :param comment: Optional comment to identify the job.
+        """
+        job = self.cron.new(command=command, comment=comment)
+        minute, hour, day, month, day_of_week = schedule
+        job.setall(minute, hour, day, month, day_of_week)
+        self.cron.write()
+        return job
+
+    def remove_job(self, comment):
+        """
+        Remove a job based on its comment.
+        :param comment: The comment identifying the job to remove.
+        """
+        self.cron.remove_all(comment=comment)
+        self.cron.write()
+
+    def list_jobs(self):
+        """
+        List all existing cron jobs.
+        """
+        return [job for job in self.cron]
+
+class EnvManager:
+    """
+    Load and manage environment variables from `.env` files without using the dotenv library.
+    """
+
+    @staticmethod
+    def load_env(env_file=".env"):
+        """
+        Load environment variables from a `.env` file manually.
+        """
+        if not os.path.exists(env_file):
+            raise FileNotFoundError(f"{env_file} not found")
+        with open(env_file, "r") as f:
+            for line in f:
+                if "=" in line:
+                    key, value = line.strip().split("=", 1)
+                    os.environ[key] = value
+
+    @staticmethod
+    def get_env_var(key, default=None):
+        """
+        Get the value of an environment variable.
+        :param key: Environment variable key.
+        :param default: Default value if the variable is not found.
+        """
+        return os.getenv(key, default)
+
+    @staticmethod
+    def set_env_var(key, value, env_file=".env"):
+        """
+        Set a new environment variable in memory and update the `.env` file.
+        :param key: Environment variable key.
+        :param value: Environment variable value.
+        :param env_file: Path to the `.env` file.
+        """
+        os.environ[key] = value
+        with open(env_file, "a") as f:
+            f.write(f"{key}={value}\n")
+
+class FileSync:
+    """
+    Sync files between local and remote systems or directories.
+    """
+
+    @staticmethod
+    def sync_directories(source, destination):
+        """
+        Sync two directories.
+        :param source: Source directory.
+        :param destination: Destination directory.
+        """
+        if not os.path.exists(source):
+            raise FileNotFoundError(f"Source directory '{source}' not found")
+        shutil.copytree(source, destination, dirs_exist_ok=True)
+
+    @staticmethod
+    def sync_with_remote(local_dir, remote_dir, remote_host, user, direction="push"):
+        """
+        Sync a local directory with a remote directory using `rsync`.
+        :param local_dir: Local directory path.
+        :param remote_dir: Remote directory path.
+        :param remote_host: Hostname or IP of the remote machine.
+        :param user: Remote system's username.
+        :param direction: Either "push" (local to remote) or "pull" (remote to local).
+        """
+        if direction == "push":
+            command = f"rsync -avz {local_dir}/ {user}@{remote_host}:{remote_dir}"
+        elif direction == "pull":
+            command = f"rsync -avz {user}@{remote_host}:{remote_dir}/ {local_dir}"
+        else:
+            raise ValueError("Direction must be 'push' or 'pull'")
+
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f"Sync failed: {result.stderr}")
+        return result.stdout
+
+class BackgroundJob:
+    """
+    Background job execution using subprocess.
+    """
+
+    @staticmethod
+    def execute_in_background(command, log_file="job.log"):
+        """
+        Execute a command as a background job and redirect output to a log file.
+        :param command: Command to execute.
+        :param log_file: Log file to store the output.
+        """
+        with open(log_file, "w") as log:
+            subprocess.Popen(command, shell=True, stdout=log, stderr=log)
+
+    @staticmethod
+    def run_periodically(command, interval):
+        """
+        Execute a command periodically.
+        :param command: Command to execute.
+        :param interval: Interval in seconds.
+        """
+        while True:
+            subprocess.run(command, shell=True)
+            time.sleep(interval)
