@@ -29,6 +29,8 @@ import locale
 from babel import dates, numbers
 from faker import Faker
 import datetime
+import pymysql
+import pg8000
 
 class UtilityClass(ABC):
     """
@@ -1964,3 +1966,119 @@ class LocalizationUtils:
         """
         converted = amount * exchange_rate
         return f"{from_currency} {amount:,.2f} → {to_currency} {converted:,.2f}"
+
+class DatabaseSchemaExtractor:
+    """
+    Extract database schema information for SQLite, MySQL, and PostgreSQL.
+    """
+
+    @staticmethod
+    def extract_schema(db_type: str, connection_details: Dict[str, Any], table_name: str) -> List[Dict[str, Any]]:
+        """
+        Extract schema information for a table.
+        :param db_type: Type of the database ('sqlite', 'mysql', 'postgresql').
+        :param connection_details: Database connection details (e.g., path, host, user, password).
+        :param table_name: Name of the table to extract schema from.
+        :return: A list of column information.
+        """
+        if db_type == "sqlite":
+            return DatabaseSchemaExtractor._extract_sqlite_schema(connection_details["db_path"], table_name)
+        elif db_type == "mysql":
+            return DatabaseSchemaExtractor._extract_mysql_schema(connection_details, table_name)
+        elif db_type == "postgresql":
+            return DatabaseSchemaExtractor._extract_postgresql_schema(connection_details, table_name)
+        else:
+            raise ValueError(f"Unsupported database type: {db_type}")
+
+    @staticmethod
+    def _extract_sqlite_schema(db_path: str, table_name: str) -> List[Dict[str, Any]]:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        schema = [{"name": row[1], "type": row[2]} for row in cursor.fetchall()]
+        conn.close()
+        return schema
+
+    @staticmethod
+    def _extract_mysql_schema(connection_details: Dict[str, Any], table_name: str) -> List[Dict[str, Any]]:
+        conn = pymysql.connect(
+            host=connection_details["host"],
+            user=connection_details["user"],
+            password=connection_details["password"],
+            database=connection_details["database"],
+        )
+        cursor = conn.cursor()
+        cursor.execute(f"DESCRIBE {table_name}")
+        schema = [{"name": row[0], "type": row[1]} for row in cursor.fetchall()]
+        conn.close()
+        return schema
+
+    @staticmethod
+    def _extract_postgresql_schema(connection_details: Dict[str, Any], table_name: str) -> List[Dict[str, Any]]:
+        conn = pg8000.connect(
+            host=connection_details["host"],
+            user=connection_details["user"],
+            password=connection_details["password"],
+            database=connection_details["database"],
+        )
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_name = %s
+        """, (table_name,))
+        schema = [{"name": row[0], "type": row[1]} for row in cursor.fetchall()]
+        conn.close()
+        return schema
+
+class AutomatedTestSuiteGenerator:
+    """
+    Generate automated test suites from database schemas.
+    """
+
+    @staticmethod
+    def generate_test_cases(schema: List[Dict[str, Any]], num_cases: int = 10) -> List[Dict[str, Any]]:
+        """
+        Generate test cases based on a table schema.
+        :param schema: List of column information from the schema.
+        :param num_cases: Number of test cases to generate.
+        :return: List of dictionaries representing test cases.
+        """
+        faker = Faker()
+        test_cases = []
+
+        for _ in range(num_cases):
+            case = {}
+            for column in schema:
+                col_name = column["name"]
+                col_type = column["type"].lower()
+                if "int" in col_type:
+                    case[col_name] = faker.random_int()
+                elif "char" in col_type or "text" in col_type:
+                    case[col_name] = faker.text(max_nb_chars=20)
+                elif "date" in col_type or "time" in col_type:
+                    case[col_name] = faker.date_time_this_century().strftime("%Y-%m-%d %H:%M:%S")
+                else:
+                    case[col_name] = None
+            test_cases.append(case)
+
+        return test_cases
+
+    @staticmethod
+    def generate_api_test_suite(base_url: str, endpoint: str, schema: List[Dict[str, Any]], num_cases: int = 10):
+        """
+        Generate a test suite for an API endpoint based on a database schema.
+        :param base_url: Base URL for the API.
+        :param endpoint: API endpoint (e.g., '/users').
+        :param schema: List of column information from the schema.
+        :param num_cases: Number of test cases to generate.
+        """
+        test_cases = AutomatedTestSuiteGenerator.generate_test_cases(schema, num_cases)
+        headers = {"Content-Type": "application/json"}
+
+        for idx, case in enumerate(test_cases, start=1):
+            try:
+                response = requests.post(f"{base_url}{endpoint}", json=case, headers=headers)
+                print(f"Test Case {idx}: Status Code {response.status_code}, Response: {response.text}")
+            except requests.exceptions.RequestException as e:
+                print(f"Test Case {idx} failed: {e}")
