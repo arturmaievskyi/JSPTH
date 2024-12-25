@@ -2082,3 +2082,90 @@ class AutomatedTestSuiteGenerator:
                 print(f"Test Case {idx}: Status Code {response.status_code}, Response: {response.text}")
             except requests.exceptions.RequestException as e:
                 print(f"Test Case {idx} failed: {e}")
+
+class OfflineTranslator:
+    """
+    Provides offline translation support using predefined dictionaries or pre-trained models.
+    """
+
+    def __init__(self, dictionary_file: str):
+        """
+        Initialize the Offline Translator with a dictionary file.
+        :param dictionary_file: Path to a JSON file containing translation mappings.
+        """
+        with open(dictionary_file, "r", encoding="utf-8") as f:
+            self.dictionary = json.load(f)
+
+    def translate(self, text: str, source_language: str, target_language: str) -> str:
+        """
+        Translate text using the predefined dictionary.
+        :param text: Text to translate.
+        :param source_language: Source language code (e.g., 'en').
+        :param target_language: Target language code (e.g., 'fr').
+        :return: Translated text.
+        """
+        key = f"{source_language}->{target_language}"
+        if key in self.dictionary:
+            return self.dictionary[key].get(text, text)  # Return text if no translation is found
+        else:
+            raise ValueError(f"No translation dictionary for {source_language} to {target_language}")
+
+class CloudTranslator:
+    """
+    Support for cloud-based translation services like Azure Translate, IBM Watson, and Google Translate.
+    """
+
+    @staticmethod
+    def translate_text(
+        text: str, source_language: str, target_language: str, service: str, api_key: str, **kwargs
+    ) -> str:
+        """
+        Translate text using the specified cloud service.
+        :param text: Text to translate.
+        :param source_language: Source language code (e.g., 'en').
+        :param target_language: Target language code (e.g., 'fr').
+        :param service: Translation service ('google', 'azure', 'ibm').
+        :param api_key: API key for the selected service.
+        :param kwargs: Additional arguments for specific services.
+        :return: Translated text.
+        """
+        if service == "google":
+            return CloudTranslator._google_translate(text, source_language, target_language, api_key)
+        elif service == "azure":
+            return CloudTranslator._azure_translate(text, source_language, target_language, api_key, **kwargs)
+        elif service == "ibm":
+            return CloudTranslator._ibm_translate(text, source_language, target_language, api_key, **kwargs)
+        else:
+            raise ValueError(f"Unsupported translation service: {service}")
+
+    @staticmethod
+    def _google_translate(text: str, source_language: str, target_language: str, api_key: str) -> str:
+        url = f"https://translation.googleapis.com/language/translate/v2"
+        payload = {"q": text, "source": source_language, "target": target_language, "format": "text"}
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.post(url, json=payload, headers=headers)
+        if response.status_code == 200:
+            return response.json()["data"]["translations"][0]["translatedText"]
+        else:
+            raise RuntimeError(f"Google Translate API error: {response.text}")
+
+    @staticmethod
+    def _azure_translate(text: str, source_language: str, target_language: str, api_key: str, endpoint: str) -> str:
+        url = f"{endpoint}/translate?api-version=3.0&from={source_language}&to={target_language}"
+        payload = [{"Text": text}]
+        headers = {"Ocp-Apim-Subscription-Key": api_key, "Content-Type": "application/json"}
+        response = requests.post(url, json=payload, headers=headers)
+        if response.status_code == 200:
+            return response.json()[0]["translations"][0]["text"]
+        else:
+            raise RuntimeError(f"Azure Translate API error: {response.text}")
+
+    @staticmethod
+    def _ibm_translate(text: str, source_language: str, target_language: str, api_key: str, url: str) -> str:
+        headers = {"Content-Type": "application/json"}
+        payload = {"text": [text], "source": source_language, "target": target_language}
+        response = requests.post(url, json=payload, headers=headers, auth=("apikey", api_key))
+        if response.status_code == 200:
+            return response.json()["translations"][0]["translation"]
+        else:
+            raise RuntimeError(f"IBM Watson Translate API error: {response.text}")
