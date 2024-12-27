@@ -286,7 +286,3 @@ class Console:
         for command_name in self.commands:
             print(f"  - {command_name}")
 
-comands = {
-    'run': Console.run(),
-    
-}
