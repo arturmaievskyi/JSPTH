@@ -1,6 +1,3 @@
-# enhanced_session_logging.py
-
-import json
 import time
 import smtplib
 from email.mime.text import MIMEText
@@ -8,11 +5,12 @@ from email.mime.multipart import MIMEMultipart
 import redis
 import logging
 from elasticsearch import Elasticsearch
+import json
 
-# Initialize Elasticsearch client
+# Elasticsearch client
 es_client = Elasticsearch([{"host": "localhost", "port": 9200}])
 
-# Configure logging
+# Logging configuration
 def configure_logging():
     logging.basicConfig(
         level=logging.INFO,
@@ -27,28 +25,42 @@ def configure_logging():
 logger = configure_logging()
 
 class EmailNotifier:
-    def __init__(self, smtp_server, smtp_port, email, password):
+    def __init__(self, smtp_server, smtp_port, email, password, max_retries=3, retry_backoff=2):
         self.smtp_server = smtp_server
         self.smtp_port = smtp_port
         self.email = email
         self.password = password
+        self.max_retries = max_retries
+        self.retry_backoff = retry_backoff
 
     def send_email(self, recipient, subject, body):
-        try:
-            message = MIMEMultipart()
-            message["From"] = self.email
-            message["To"] = recipient
-            message["Subject"] = subject
-            message.attach(MIMEText(body, "plain"))
+        attempt = 0
+        while attempt < self.max_retries:
+            try:
+                message = MIMEMultipart()
+                message["From"] = self.email
+                message["To"] = recipient
+                message["Subject"] = subject
+                message.attach(MIMEText(body, "plain"))
 
-            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-                server.starttls()
-                server.login(self.email, self.password)
-                server.sendmail(self.email, recipient, message.as_string())
+                with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                    server.starttls()
+                    server.login(self.email, self.password)
+                    server.sendmail(self.email, recipient, message.as_string())
 
-            logger.info(f"Email sent to {recipient} with subject '{subject}'")
-        except Exception as e:
-            logger.error(f"Failed to send email: {e}")
+                logger.info(f"Email sent to {recipient} with subject '{subject}'")
+                return True  # Success
+            except Exception as e:
+                attempt += 1
+                delay = self.retry_backoff ** attempt
+                logger.error(
+                    f"Failed to send email (attempt {attempt}/{self.max_retries}). "
+                    f"Retrying in {delay} seconds. Error: {e}"
+                )
+                time.sleep(delay)
+
+        logger.critical(f"All retries failed for email to {recipient}.")
+        return False  # Failed after retries
 
 class EnhancedRedisSessionStore:
     def __init__(self, redis_host, redis_port, session_lifetime, email_notifier):
@@ -115,23 +127,3 @@ class EnhancedRedisSessionStore:
         self.delete_session(old_session_id, metadata)
         self._log_to_elasticsearch("rotate", new_session_id, metadata)
         return new_session_id
-
-    def query_logs(self, action, start_time, end_time):
-        """Query logs in Elasticsearch for specific actions within a time range."""
-        query = {
-            "query": {
-                "bool": {
-                    "must": [
-                        {"term": {"action": action}},
-                        {
-                            "range": {
-                                "timestamp": {"gte": start_time, "lte": end_time}
-                            }
-                        },
-                    ]
-                }
-            }
-        }
-        results = es_client.search(index="session_logs", body=query)
-        logger.info(f"Queried logs for action '{action}' between {start_time} and {end_time}")
-        return results["hits"]["hits"]
