@@ -137,7 +137,31 @@ class HttpResponse:
 
 class HttpContext:
     """Encapsulates an HTTP request and response."""
-    def __init__(self, request: HttpRequest, response: HttpResponse, session=None):
+    def __init__(self, request, response, session_manager):
         self.request = request
         self.response = response
-        self.session = session
+        self.session_manager = session_manager
+        self.session_id = None
+        self.session = None
+
+        # Load session
+        encrypted_session_id = request.cookies.get(session_manager.cookie_name, None)
+        if encrypted_session_id:
+            self.session_id, self.session = session_manager.get_session(encrypted_session_id)
+        
+        # Create a new session if none exists
+        if not self.session:
+            self.session_id, self.session = session_manager.create_session()
+    
+    def finalize_session(self):
+        """Encrypt and save the session ID in the response."""
+        encrypted_session_id = self.session_manager.cookie_manager.encrypt(self.session_id, max_age=self.session_manager.session_lifetime)
+        self.response.set_cookie(
+            key=self.session_manager.cookie_name,
+            value=encrypted_session_id,
+            max_age=self.session_manager.session_lifetime,
+            secure=True,
+            httponly=True,
+            samesite="Strict"
+        )
+        self.session_manager.save_session(self.session_id, self.session)
