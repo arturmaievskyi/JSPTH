@@ -6,6 +6,8 @@ import redis
 import logging
 from elasticsearch import Elasticsearch
 import json
+from geopy.geocoders import Nominatim
+from geopy import geolocator
 
 # Elasticsearch client
 es_client = Elasticsearch([{"host": "localhost", "port": 9200}])
@@ -127,3 +129,87 @@ class EnhancedRedisSessionStore:
         self.delete_session(old_session_id, metadata)
         self._log_to_elasticsearch("rotate", new_session_id, metadata)
         return new_session_id
+
+class EnhancedElasticsearchSessionStore:
+    def __init__(self, session_lifetime=1800):
+        self.session_lifetime = session_lifetime
+
+    def _generate_session_id(self):
+        return f"session-{int(time.time() * 1000)}"
+
+    def _log_to_elasticsearch(self, action, session_id, session_data=None, metadata=None):
+        """
+        Store session logs directly in Elasticsearch.
+        """
+        log_entry = {
+            "timestamp": int(time.time()),
+            "action": action,
+            "session_id": session_id,
+            "session_data": session_data or {},
+            "metadata": metadata or {},
+        }
+        es_client.index(index="session_logs", document=log_entry)
+        logger.info(f"Logged to Elasticsearch: {log_entry}")
+
+    def _get_geolocation(self, ip_address):
+        """
+        Fetch geolocation data for the given IP address.
+        """
+        try:
+            location = geolocator.geocode(ip_address)
+            if location:
+                return {"latitude": location.latitude, "longitude": location.longitude}
+            return None
+        except Exception as e:
+            logger.warning(f"Failed to fetch geolocation for IP {ip_address}: {e}")
+            return None
+
+    def create_session(self, data, metadata=None):
+        session_id = self._generate_session_id()
+        session_data = {
+            "created_at": int(time.time()),
+            "data": data,
+        }
+
+        # Enhance metadata with geolocation
+        if metadata and "ip_address" in metadata:
+            metadata["geolocation"] = self._get_geolocation(metadata["ip_address"])
+
+        # Log session creation in Elasticsearch
+        self._log_to_elasticsearch("create", session_id, session_data, metadata)
+        return session_id
+
+    def get_session(self, session_id):
+        """
+        Query Elasticsearch to retrieve session logs for access.
+        """
+        query = {
+            "query": {
+                "bool": {
+                    "must": [
+                        {"term": {"session_id": session_id}},
+                        {"term": {"action": "create"}},
+                    ]
+                }
+            }
+        }
+        response = es_client.search(index="session_logs", body=query)
+        hits = response.get("hits", {}).get("hits", [])
+        if not hits:
+            logger.warning(f"Session not found: {session_id}")
+            self._log_to_elasticsearch("access_failed", session_id)
+            return None
+
+        # Return the session data from Elasticsearch
+        session_data = hits[0]["_source"]["session_data"]
+        logger.info(f"Accessed session: {session_id}")
+        self._log_to_elasticsearch("access", session_id)
+        return session_data
+
+    def delete_session(self, session_id, metadata=None):
+        """
+        Log session deletion in Elasticsearch.
+        """
+        self._log_to_elasticsearch("delete", session_id, metadata=metadata)
+        logger.info(f"Deleted session: {session_id}")
+
