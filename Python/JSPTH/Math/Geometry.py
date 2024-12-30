@@ -30,7 +30,6 @@ class GeometryMath():
             raise ValueError("Radius cannot be negative")
         return(2 * math.pi * radius)
 
-
     def volume_of_cone(radius: float, height: float) -> float:
         """
         Calculate the volume of a cone.
