@@ -4,6 +4,7 @@
 import pandas as pd
 import seaborn as sns
 import sqlite3
+
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -226,8 +227,6 @@ class EnhancedVisualizationApp(App):
         """
         plt.savefig('saved_chart.png', bbox_inches='tight')
         print("Chart saved as 'saved_chart.png'")
-
-
 
 class DatabaseConnection:
     def __init__(self, db_path: str):
